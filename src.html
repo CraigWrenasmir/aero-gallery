@@ -72,7 +72,8 @@ h1{margin:0;font-weight:900;font-size:48px;font-size:clamp(34px,6vw,58px);letter
 .pill.toys.on{color:#fff;background:linear-gradient(180deg,#a9ff6a 0%,#4fcb2a 48%,#2fae17 52%,#6fdc3f 100%)}
 
 /* gallery */
-.grid{columns:4 260px;column-gap:14px}
+.grid{display:flex;align-items:flex-start}
+.col{flex:1;min-width:0;margin-left:14px}.col:first-child{margin-left:0}
 .card{break-inside:avoid;margin:0 0 14px;position:relative;border-radius:18px;overflow:hidden;cursor:pointer;
   background:rgba(255,255,255,.25);border:2px solid rgba(255,255,255,.75);
   box-shadow:0 10px 24px rgba(0,50,100,.28);transform:translateZ(0);transition:transform .25s}
@@ -154,9 +155,46 @@ footer a{color:#fff}
 .ring{position:absolute;border-radius:50%;border:3px solid hsl(var(--h), 100%, 85%);pointer-events:none;animation:ring .9s ease-out forwards;box-shadow:0 0 20px hsl(var(--h), 100%, 70%)}
 @keyframes ring{from{opacity:.95;transform:translate(-50%,-50%) scale(.6)}to{opacity:0;transform:translate(-50%,-50%) scale(2.2)}}
 
-@media (max-width:600px){.grid{columns:2 150px;column-gap:10px}.card{margin-bottom:10px;border-radius:14px}.gbtn.round{width:52px;height:52px;margin-top:-26px}}
+@media (max-width:600px){.col{margin-left:10px}.card{margin-bottom:10px;border-radius:14px}.gbtn.round{width:52px;height:52px;margin-top:-26px}}
 .bar>*+*,.lbtools>*+*,#toyBtns>*+*{margin-left:8px}
 @supports (gap:1px) and (translate:none){.bar>*+*,.lbtools>*+*,#toyBtns>*+*{margin-left:0}}
+
+.chartop{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:0 0 14px}
+.chartop p{margin:6px 0;font-weight:800;text-shadow:0 1px 3px rgba(0,60,100,.4)}
+.card.orig img{background:none}
+#toyPanel{position:absolute;z-index:4;left:0;right:0;bottom:0;display:none}
+.mk{margin:0 auto calc(10px + env(safe-area-inset-bottom));max-width:900px;display:flex;align-items:center;padding:12px;border-radius:26px;
+  background:linear-gradient(180deg,rgba(255,255,255,.75),rgba(220,242,255,.6));-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:2px solid #fff;box-shadow:0 10px 30px rgba(0,40,90,.35)}
+.mk img{width:150px;height:180px;border-radius:18px;flex:none;margin-right:12px;box-shadow:0 4px 12px rgba(0,40,90,.25)}
+.mkBtns{display:flex;flex-wrap:wrap}
+.mkBtns .pill{margin:4px;font-size:15px;padding:9px 14px}
+.msnWrap{top:calc(80px + env(safe-area-inset-top));bottom:calc(50px + env(safe-area-inset-bottom))!important;padding:0 14px}
+.msn{display:flex;height:100%;max-width:1000px;margin:0 auto;color:#12324f}
+.win{display:flex;flex-direction:column;border-radius:16px;overflow:hidden;border:2px solid rgba(255,255,255,.9);
+  background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(232,246,255,.88));box-shadow:0 12px 30px rgba(0,40,90,.35)}
+.win.list{width:36%;min-width:220px;margin-right:14px}
+.win.chat{flex:1}
+.wt{font-weight:900;color:#fff;padding:10px 14px;background:linear-gradient(180deg,#8fdcff,#2a9ee8 50%,#1580d0 51%,#4ab8f5);text-shadow:0 1px 2px rgba(0,40,90,.5)}
+.me,.who{display:flex;align-items:center;padding:10px;border-bottom:1px solid #cfe6f5}
+.me img,.who img{width:64px;height:70px;margin-right:10px}
+.me b,.who b{display:block;font-size:18px}
+.st{font-style:normal;font-weight:800;font-size:13px}
+.st.on,.st.online{color:#2fae2f}.st.away{color:#e08a00}.st.busy{color:#e02828}
+#blist{overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1}
+.brow{display:flex;align-items:center;width:100%;border:0;background:none;font:inherit;color:inherit;text-align:left;padding:6px 10px;cursor:pointer}
+.brow img{width:48px;height:52px;margin-right:10px}
+.brow b{display:block}
+.brow.sel{background:linear-gradient(180deg,#d8f2ff,#b0e0ff)}
+#clog{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px;font-size:17px;font-weight:700}
+.msg{margin:0 0 10px}
+.msg b{color:#1a6fd6;font-weight:800}.msg.mine b{color:#2e9e2e}
+.emos{display:flex;flex-wrap:wrap;padding:8px;border-top:1px solid #cfe6f5;background:rgba(255,255,255,.6)}
+.emo{font:inherit;font-size:26px;width:52px;height:52px;margin:4px;border-radius:14px;border:1px solid #fff;cursor:pointer;
+  background:linear-gradient(180deg,#fff,#e2f4ff 50%,#cbeaff 51%,#e8f7ff);box-shadow:0 2px 6px rgba(0,50,100,.2)}
+.emo.nudge{width:auto;padding:0 14px;font-size:17px;font-weight:900;color:#fff;background:linear-gradient(180deg,#ffb36b,#ff7a1a 50%,#e8600a 51%,#ff9a3c)}
+.shake{animation:shake .5s}
+@keyframes shake{10%,50%,90%{transform:translate(-10px,4px)}30%,70%{transform:translate(10px,-4px)}100%{transform:none}}
+@media (max-width:700px){.msn{flex-direction:column}.win.list{width:auto;margin:0 0 10px;height:38%}.mk{flex-direction:column}.mk img{margin:0 0 8px}}
 </style>
 </head>
 <body>
@@ -190,16 +228,20 @@ footer a{color:#fff}
   <button class="gbtn" id="toyClose">✕ Back</button>
   <div id="toyBtns"></div>
   <div id="toyTitle"></div>
+  <div id="toyPanel"></div>
 </div>
 
+<script src="chars.js"></script>
 <script>
 const ITEMS = /*ITEMS*/[];
-const CATS = ['Bubbles & Water','Under the Sea','Blue Skies','Lagoons','Green & Growing','Up High'];
+const CATS = ['Characters','Robot Pets','Gadgets','Bubbles & Water','Under the Sea','Blue Skies','Lagoons','Green & Growing','Up High'];
 const $ = s => document.querySelector(s);
 const store = {
   get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
   set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 };
+function store0(k,d){return store.get(k,d)}
+let charBase = store0('aeroCharBase', 1000);
 let favs = new Set(store.get('aeroFavs',[]));
 let view = store.get('aeroView','All');
 let list = [];
@@ -229,12 +271,25 @@ $('#bar').addEventListener('click',e=>{
 function render(){
   const main=$('#main');
   if(view==='Toys'){ main.innerHTML=toysHTML(); return; }
-  list = view==='All' ? ITEMS : view==='♥ Favourites' ? ITEMS.filter(i=>favs.has(i.id)) : ITEMS.filter(i=>i.cat===view);
+  let top='';
+  if(view==='Characters'){ list=charSet(charBase); top='<div class="chartop"><p>Original characters drawn just for this gallery. There are millions of them!</p><button class="pill toys" id="shuffle">🔀 Show me new ones</button></div>'; }
+  else if(view==='All'){ const ch=charSet(charBase+7); list=[]; ITEMS.forEach((it,n)=>{ list.push(it); if(n%4===3&&ch.length) list.push(ch.shift()); }); }
+  else if(view==='♥ Favourites'){ list=ITEMS.filter(i=>favs.has(i.id)); [...favs].forEach(id=>{ if(id.indexOf('c-')===0){ const c=charFromId(id); if(c) list.unshift(c); } }); }
+  else list=ITEMS.filter(i=>i.cat===view);
   if(!list.length){ main.innerHTML=`<div class="empty">No favourites yet!<br>Tap the ♥ on any picture to keep it here.</div>`; return; }
-  main.innerHTML='<div class="grid">'+list.map((it,n)=>
-    `<div class="card" data-n="${n}"><img loading="lazy" src="img/thumb/${it.id}.jpg" width="${it.w}" height="${it.h}" alt="${esc(it.title)}">
-     <button class="heart${favs.has(it.id)?' on':''}" data-id="${it.id}" aria-label="Favourite">♥</button></div>`).join('')+'</div>';
+  const ncol=colCount(), cols=[], hs=[];
+  for(let c=0;c<ncol;c++){cols.push('');hs.push(0);}
+  list.forEach((it,n)=>{
+    let c=0; for(let k=1;k<ncol;k++) if(hs[k]<hs[c]-1) c=k;
+    hs[c]+=it.h/it.w+.08;
+    cols[c]+=`<div class="card${it.original?' orig':''}" data-n="${n}"><img loading="lazy" src="${it.src||'img/thumb/'+it.id+'.jpg'}" width="${it.w}" height="${it.h}" alt="${esc(it.title)}">
+     <button class="heart${favs.has(it.id)?' on':''}" data-id="${it.id}" aria-label="Favourite">♥</button></div>`;
+  });
+  main.innerHTML=top+'<div class="grid">'+cols.map(c=>'<div class="col">'+c+'</div>').join('')+'</div>';
 }
+function colCount(){ const w=Math.min(document.documentElement.clientWidth,1400)-32; return Math.max(2,Math.min(5,Math.floor(w/250))); }
+let lastCols=colCount();
+window.addEventListener('resize',()=>{ const c=colCount(); if(c!==lastCols){ lastCols=c; if(view!=='Toys') render(); } });
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function toggleFav(id){
   favs.has(id)?favs.delete(id):favs.add(id); store.set('aeroFavs',[...favs]);
@@ -243,7 +298,8 @@ $('#main').addEventListener('click',e=>{
   const h=e.target.closest('.heart');
   if(h){ toggleFav(h.dataset.id); h.classList.toggle('on',favs.has(h.dataset.id)); if(view==='♥ Favourites')render(); return; }
   const c=e.target.closest('.card'); if(c){ openLB(+c.dataset.n); return; }
-  const t=e.target.closest('.toy'); if(t) openToy(t.dataset.toy);
+  const t=e.target.closest('.toy'); if(t){ openToy(t.dataset.toy); return; }
+  if(e.target.id==='shuffle'){ charBase=Math.floor(Math.random()*1e8); store.set('aeroCharBase',charBase); render(); }
 });
 
 /* ---------- lightbox ---------- */
@@ -255,16 +311,16 @@ function openLB(n){ lbI=n; lb.classList.add('open'); stage.innerHTML=''; show(0)
 function closeLB(){ stopPlay(); lb.classList.remove('open','hideui'); document.body.style.overflow=''; stage.innerHTML=''; render(); }
 function show(dir){
   const it=list[lbI];
-  const img=new Image(); img.src=`img/full/${it.id}.jpg`; img.alt=it.title; img.style.opacity=0; img.className='cur';
+  const img=new Image(); img.src=it.src||`img/full/${it.id}.jpg`; img.alt=it.title; img.style.opacity=0; img.className='cur';
   const old=[...stage.children];
   old.forEach(o=>o.classList.remove('cur'));
   stage.appendChild(img);
   const go=()=>{requestAnimationFrame(()=>{img.style.opacity=1; old.forEach(o=>{o.style.opacity=0;setTimeout(()=>o.remove(),950)})})};
   img.decode?img.decode().then(go,go):(img.onload=go);
-  $('#lbCap').innerHTML=`<b>${esc(it.title)}</b>Photo: ${esc(it.artist)} · ${esc(it.license)} · <a href="${it.page}" target="_blank" rel="noopener">source</a>`;
+  $('#lbCap').innerHTML=it.original?`<b>${esc(it.title)}</b>An original drawing made for this gallery`:`<b>${esc(it.title)}</b>Photo: ${esc(it.artist)} · ${esc(it.license)} · <a href="${it.page}" target="_blank" rel="noopener">source</a>`;
   $('#lbHeart').classList.toggle('on',favs.has(it.id));
   // preload next
-  const nx=list[(lbI+1)%list.length]; if(nx){const p=new Image();p.src=`img/full/${nx.id}.jpg`}
+  const nx=list[(lbI+1)%list.length]; if(nx&&!nx.src){const p=new Image();p.src=`img/full/${nx.id}.jpg`}
 }
 function step(d){ lbI=(lbI+d+list.length)%list.length; show(d); }
 $('#lbClose').onclick=closeLB;
@@ -328,6 +384,7 @@ const TOYS = [
   {id:'chimes', name:'Glass Chimes', desc:'Tap the jelly buttons to play glassy music.', ico:'🎵', bg:'linear-gradient(160deg,#c9a4ff,#6a8cff 50%,#2c6fe0)'},
   {id:'sky', name:'Cloud Painter', desc:'Paint fluffy clouds in a bright blue sky.', ico:'☁️', bg:'linear-gradient(160deg,#bff0ff,#58b8f0 55%,#1c7fd0)'},
 ];
+TOYS.unshift.apply(TOYS, CHAR_TOYS);
 function toysHTML(){
   return '<div class="toys">'+TOYS.map(t=>`<div class="toy" data-toy="${t.id}" style="background:${t.bg}"><div class="ico">${t.ico}</div><h3>${t.name}</h3><p>${t.desc}</p></div>`).join('')+'</div>';
 }
@@ -647,13 +704,15 @@ sky(){
 },
 };
 const RIPPLE_PICS = /*RIPPLE*/[];
+Object.assign(TOYIMPL, CHAR_TOYIMPL);
 
 buildBar(); render();
 // direct links: #toy-bubbles, #photo-024
-(function(){const h=location.hash.slice(1);
+function fromHash(){const h=location.hash.slice(1);
   if(h.startsWith('toy-')&&TOYS.some(t=>t.id===h.slice(4))) openToy(h.slice(4));
   else if(h.startsWith('photo-')){view='All';buildBar();render();const n=list.findIndex(i=>i.id===h.slice(6));if(n>=0)openLB(n);}
-})();
+}
+fromHash(); window.addEventListener('hashchange',fromHash);
 </script>
 </body>
 </html>
