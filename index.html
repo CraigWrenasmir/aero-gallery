@@ -1,0 +1,647 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Aero">
+<meta name="theme-color" content="#3fa9e0">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" href="icon.png">
+<title>Aero Gallery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sky1:#0b6fb8; --sky2:#3fa9e0; --sky3:#a8e3ff; --grass:#6cc644;
+  --glass:rgba(255,255,255,.22); --glass-edge:rgba(255,255,255,.65);
+  --ink:#06395e; --white:#fff;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{
+  font-family:Nunito,"Segoe UI",-apple-system,system-ui,sans-serif;
+  color:var(--white);min-height:100vh;
+  background:
+    radial-gradient(1200px 600px at 80% -10%,rgba(255,255,255,.55),transparent 60%),
+    radial-gradient(900px 500px at 0% 110%,rgba(120,230,120,.55),transparent 60%),
+    linear-gradient(180deg,var(--sky1) 0%,var(--sky2) 45%,var(--sky3) 100%);
+  background-attachment:fixed;
+  overflow-x:hidden;
+}
+/* floating background bubbles */
+#bgBubbles{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+#bgBubbles span{position:absolute;bottom:-120px;border-radius:50%;
+  background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.9) 0 8%,rgba(255,255,255,.15) 22%,rgba(255,255,255,.05) 55%,rgba(180,240,255,.35) 72%,rgba(255,255,255,.7) 76%,transparent 78%);
+  animation:rise linear infinite}
+@keyframes rise{to{transform:translateY(-130vh) translateX(var(--dx))}}
+
+.wrap{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:0 16px 60px}
+
+header{padding:calc(22px + env(safe-area-inset-top)) 0 10px;text-align:center}
+.logo{display:inline-flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center}
+.orb{width:58px;height:58px;border-radius:50%;flex:none;position:relative;
+  background:radial-gradient(circle at 50% 110%,#b8ff7a 0,#39c24a 35%,#0a8a5a 70%,#05603f 100%);
+  box-shadow:0 6px 18px rgba(0,60,90,.35),inset 0 -4px 10px rgba(255,255,255,.35)}
+.orb::before{content:"";position:absolute;left:14%;right:14%;top:5%;height:48%;border-radius:50%/60% 60% 40% 40%;
+  background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(255,255,255,.1))}
+h1{margin:0;font-weight:900;font-size:clamp(34px,6vw,58px);letter-spacing:-.5px;
+  background:linear-gradient(180deg,#fff 0%,#fff 48%,#d4f3ff 52%,#9fe0ff 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 3px 0 rgba(0,70,120,.35)) drop-shadow(0 8px 16px rgba(0,50,100,.3))}
+.sub{margin:6px 0 0;font-weight:700;opacity:.92;text-shadow:0 1px 3px rgba(0,60,100,.4)}
+
+/* glass pill bar */
+.bar{position:sticky;top:0;z-index:5;margin:18px -16px 18px;padding:10px 16px calc(10px);
+  display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.35),rgba(255,255,255,.12));
+  -webkit-backdrop-filter:blur(14px) saturate(1.4);backdrop-filter:blur(14px) saturate(1.4);
+  border-top:1px solid rgba(255,255,255,.6);border-bottom:1px solid rgba(255,255,255,.35);
+  box-shadow:0 8px 24px rgba(0,60,110,.18)}
+.bar::-webkit-scrollbar{display:none}
+.pill{flex:none;font:inherit;font-weight:800;font-size:16px;color:var(--ink);cursor:pointer;
+  padding:10px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.9);
+  background:linear-gradient(180deg,#ffffff 0%,#e9f7ff 48%,#cdeeff 52%,#e8f8ff 100%);
+  box-shadow:0 3px 8px rgba(0,60,110,.2),inset 0 -2px 4px rgba(120,190,230,.35)}
+.pill.on{color:#fff;border-color:#8fe0ff;
+  background:linear-gradient(180deg,#7fd8ff 0%,#2aa7ea 48%,#0b86cf 52%,#39b8f2 100%);
+  box-shadow:0 3px 10px rgba(0,80,150,.4),inset 0 1px 0 rgba(255,255,255,.7),0 0 16px rgba(120,220,255,.7)}
+.pill.toys{background:linear-gradient(180deg,#e7ffcf 0%,#b8f58a 48%,#8fe25a 52%,#c5f79e 100%);color:#1f5a0a}
+.pill.toys.on{color:#fff;background:linear-gradient(180deg,#a9ff6a 0%,#4fcb2a 48%,#2fae17 52%,#6fdc3f 100%)}
+
+/* gallery */
+.grid{columns:4 260px;column-gap:14px}
+.card{break-inside:avoid;margin:0 0 14px;position:relative;border-radius:18px;overflow:hidden;cursor:pointer;
+  background:rgba(255,255,255,.25);border:2px solid rgba(255,255,255,.75);
+  box-shadow:0 10px 24px rgba(0,50,100,.28);transform:translateZ(0);transition:transform .25s}
+.card:active{transform:scale(.97)}
+.card img{display:block;width:100%;height:auto;background:linear-gradient(180deg,#bfe9ff,#7ccff5)}
+.card::after{content:"";position:absolute;left:0;right:0;top:0;height:42%;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.38),rgba(255,255,255,.05) 70%,transparent)}
+.heart{position:absolute;right:8px;bottom:8px;z-index:2;width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.8);
+  display:grid;place-items:center;font-size:19px;line-height:1;cursor:pointer;color:#fff;
+  background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,.15));-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.heart.on{background:linear-gradient(180deg,#ff9fd0,#ff3d8b 55%,#ff72ad);border-color:#ffd0e6}
+.empty{text-align:center;font-weight:800;font-size:20px;padding:40px 10px;text-shadow:0 1px 3px rgba(0,60,100,.4)}
+
+/* toys */
+.toys{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px}
+.toy{position:relative;cursor:pointer;border-radius:26px;padding:22px;min-height:190px;overflow:hidden;
+  border:2px solid rgba(255,255,255,.8);box-shadow:0 12px 28px rgba(0,50,100,.3);color:#fff;
+  display:flex;flex-direction:column;justify-content:flex-end}
+.toy::before{content:"";position:absolute;left:0;right:0;top:0;height:50%;
+  background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,.08))}
+.toy .ico{position:absolute;right:18px;top:16px;font-size:56px;filter:drop-shadow(0 4px 6px rgba(0,0,0,.25))}
+.toy h3{position:relative;margin:0;font-size:26px;font-weight:900;text-shadow:0 2px 4px rgba(0,40,80,.45)}
+.toy p{position:relative;margin:4px 0 0;font-weight:700;text-shadow:0 1px 3px rgba(0,40,80,.45)}
+.toy:active{transform:scale(.98)}
+
+footer{margin-top:40px;text-align:center;font-weight:700;font-size:14px;opacity:.9;text-shadow:0 1px 2px rgba(0,60,100,.4)}
+footer a{color:#fff}
+
+/* lightbox */
+#lb{position:fixed;inset:0;z-index:50;display:none;background:#021526;touch-action:none;user-select:none;-webkit-user-select:none}
+#lb.open{display:block}
+#lb .stage{position:absolute;inset:0;overflow:hidden}
+#lb .stage img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;transition:opacity .9s ease}
+#lb.fill .stage img{object-fit:cover}
+#lb.show .stage img.cur{animation:kb 9s ease-out forwards}
+@keyframes kb{from{transform:scale(1)}to{transform:scale(1.12)}}
+#lb .ui{transition:opacity .4s}
+#lb.hideui .ui{opacity:0;pointer-events:none}
+.gbtn{position:absolute;z-index:3;font:inherit;font-weight:900;font-size:17px;color:#fff;cursor:pointer;
+  border-radius:999px;border:1px solid rgba(255,255,255,.75);padding:11px 18px;
+  background:linear-gradient(180deg,rgba(255,255,255,.5) 0%,rgba(255,255,255,.18) 48%,rgba(255,255,255,.06) 52%,rgba(255,255,255,.2) 100%);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 4px 14px rgba(0,0,0,.3);text-shadow:0 1px 2px rgba(0,0,0,.4)}
+.gbtn.round{width:62px;height:62px;padding:0;display:grid;place-items:center}
+.gbtn.round svg{width:30px;height:30px;stroke:#fff;stroke-width:3.5;fill:none;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))}
+#lbClose{top:calc(14px + env(safe-area-inset-top));left:14px}
+#lbPrev{left:14px;top:50%;margin-top:-31px}
+#lbNext{right:14px;top:50%;margin-top:-31px}
+.lbtools{position:absolute;z-index:3;top:calc(14px + env(safe-area-inset-top));right:14px;display:flex;gap:8px}
+.lbtools .gbtn{position:static}
+.gbtn.on{background:linear-gradient(180deg,#7fd8ff 0%,#2aa7ea 48%,#0b86cf 52%,#39b8f2 100%)}
+#lbHeart.on{background:linear-gradient(180deg,#ff9fd0,#ff3d8b 55%,#ff72ad)}
+#lbCap{position:absolute;z-index:3;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom));max-width:min(92vw,760px);
+  text-align:center;padding:10px 18px;border-radius:18px;font-size:13px;font-weight:700;line-height:1.35;
+  background:rgba(0,30,60,.35);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.35)}
+#lbCap b{font-size:16px;display:block}
+#lbCap a{color:#bfeaff}
+
+/* toy overlay */
+#toyView{position:fixed;inset:0;z-index:60;display:none;touch-action:none;user-select:none;-webkit-user-select:none;background:#0a4f86}
+#toyView.open{display:block}
+#toyView canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+#toyClose{top:calc(14px + env(safe-area-inset-top));left:14px}
+#toyBtns{position:absolute;z-index:3;top:calc(14px + env(safe-area-inset-top));right:14px;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;max-width:70vw}
+#toyBtns .gbtn{position:static}
+#toyTitle{position:absolute;z-index:2;left:0;right:0;bottom:calc(16px + env(safe-area-inset-bottom));text-align:center;font-weight:900;font-size:18px;pointer-events:none;
+  text-shadow:0 2px 6px rgba(0,30,60,.6);opacity:.9}
+/* chimes */
+#chimes{position:absolute;inset:0;display:none;padding:calc(90px + env(safe-area-inset-top)) 18px calc(60px + env(safe-area-inset-bottom));
+  grid-template-columns:repeat(4,1fr);gap:16px;align-content:center;justify-items:center}
+#chimes.open{display:grid}
+.jelly{width:min(20vw,20vh,150px);aspect-ratio:1;border-radius:50%;border:2px solid rgba(255,255,255,.7);cursor:pointer;position:relative;
+  background:radial-gradient(circle at 50% 115%,hsl(var(--h) 100% 78%) 0,hsl(var(--h) 90% 55%) 40%,hsl(var(--h) 85% 34%) 100%);
+  box-shadow:0 10px 24px rgba(0,30,70,.4),inset 0 -8px 18px hsl(var(--h) 100% 80% / .6);transition:transform .08s}
+.jelly::before{content:"";position:absolute;left:13%;right:13%;top:5%;height:46%;border-radius:50%/60% 60% 40% 40%;
+  background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(255,255,255,.08))}
+.jelly.hit{animation:wob .6s}
+@keyframes wob{0%{transform:scale(1)}15%{transform:scale(.85,1.12)}35%{transform:scale(1.12,.9)}55%{transform:scale(.96,1.04)}75%{transform:scale(1.02,.98)}100%{transform:scale(1)}}
+.ring{position:absolute;border-radius:50%;border:3px solid hsl(var(--h) 100% 85%);pointer-events:none;animation:ring .9s ease-out forwards;box-shadow:0 0 20px hsl(var(--h) 100% 70%)}
+@keyframes ring{from{opacity:.95;transform:translate(-50%,-50%) scale(.6)}to{opacity:0;transform:translate(-50%,-50%) scale(2.2)}}
+
+@media (max-width:600px){.grid{columns:2 150px;column-gap:10px}.card{margin-bottom:10px;border-radius:14px}.gbtn.round{width:52px;height:52px;margin-top:-26px}}
+</style>
+</head>
+<body>
+<div id="bgBubbles"></div>
+<div class="wrap">
+  <header>
+    <div class="logo"><div class="orb"></div><h1>Aero Gallery</h1></div>
+    <p class="sub">Bubbles, water, sky and shiny green things. Tap a picture to go big!</p>
+  </header>
+  <nav class="bar" id="bar"></nav>
+  <main id="main"></main>
+  <footer>All photos come from <a href="https://commons.wikimedia.org" target="_blank" rel="noopener">Wikimedia Commons</a> under free licences. Tap any picture to see who took it.</footer>
+</div>
+
+<div id="lb">
+  <div class="stage" id="lbStage"></div>
+  <button class="gbtn ui" id="lbClose">✕ Back</button>
+  <div class="lbtools ui">
+    <button class="gbtn" id="lbFill" title="Fill the screen">Fill</button>
+    <button class="gbtn" id="lbHeart">♥</button>
+    <button class="gbtn" id="lbPlay">▶ Slideshow</button>
+  </div>
+  <button class="gbtn round ui" id="lbPrev" aria-label="Previous"><svg viewBox="0 0 24 24"><path d="M15 4l-8 8 8 8"/></svg></button>
+  <button class="gbtn round ui" id="lbNext" aria-label="Next"><svg viewBox="0 0 24 24"><path d="M9 4l8 8-8 8"/></svg></button>
+  <div id="lbCap" class="ui"></div>
+</div>
+
+<div id="toyView">
+  <canvas id="toyCanvas"></canvas>
+  <div id="chimes"></div>
+  <button class="gbtn" id="toyClose">✕ Back</button>
+  <div id="toyBtns"></div>
+  <div id="toyTitle"></div>
+</div>
+
+<script>
+const ITEMS = [{"id": "000", "cat": "Bubbles & Water", "w": 520, "h": 347, "title": "Dew on a thin leaf in macro", "artist": "Jono Hislop jonohislop", "license": "CC0", "page": "https://commons.wikimedia.org/wiki/File:Dew_on_a_thin_leaf_in_macro_(Unsplash).jpg"}, {"id": "007", "cat": "Under the Sea", "w": 520, "h": 390, "title": "Chromis reef fish and staghorn coral underwater scenic", "artist": "Amanda Meyer, U.S. Fish and Wildlife Service", "license": "Public domain", "page": "https://commons.wikimedia.org/wiki/File:Chromis_reef_fish_and_staghorn_coral_underwater_scenic.jpg"}, {"id": "035", "cat": "Lagoons", "w": 520, "h": 347, "title": "Havelock Island, Mangrove tree on the beach, Andaman Islands", "artist": "Vyacheslav Argenberg", "license": "CC BY 4.0", "page": "https://commons.wikimedia.org/wiki/File:Havelock_Island,_Mangrove_tree_on_the_beach,_Andaman_Islands.jpg"}, {"id": "025", "cat": "Blue Skies", "w": 520, "h": 293, "title": "White Cumulus Clouds against Blue Sky", "artist": "Lance Vanlewen", "license": "CC BY-SA 4.0", "page": "https://commons.wikimedia.org/wiki/File:White_Cumulus_Clouds_against_Blue_Sky.jpg"}, {"id": "013", "cat": "Green & Growing", "w": 520, "h": 390, "title": "Rolling tea plantations leading to Kawaida Waterfall, Cianda, Kiambu County 01", "artist": "Lebu Ayiga", "license": "CC BY 4.0", "page": "https://commons.wikimedia.org/wiki/File:Rolling_tea_plantations_leading_to_Kawaida_Waterfall,_Cianda,_Kiambu_County_01.jpg"}, {"id": "014", "cat": "Up High", "w": 520, "h": 339, "title": "Aurora borealis over Eielson Air Force Base, Alaska", "artist": "United States Air Force photo by Senior Airman Joshua Strang", "license": "Public domain", "page": "https://commons.wikimedia.org/wiki/File:Aurora_borealis_over_Eielson_Air_Force_Base,_Alaska.jpg"}, {"id": "001", "cat": "Bubbles & Water", "w": 520, "h": 345, "title": "Small leaf with water drops", "artist": "David Paul Pinter", "license": "CC BY-SA 4.0", "page": "https://commons.wikimedia.org/wiki/File:Small_leaf_with_water_drops.jpg"}, {"id": "008", "cat": "Under the Sea", "w": 520, "h": 346, "title": "Colorful underwater landscape of a coral reef", "artist": "Jim E Maragos, U.S. Fish and Wildlife Service", "license": "Public domain", "page": "https://commons.wikimedia.org/wiki/File:Colorful_underwater_landscape_of_a_coral_reef.jpg"}, {"id": "036", "cat": "Lagoons", "w": 520, "h": 347, "title": "Koh Lipe (island), Tropical beach, Thailand", "artist": "Vyacheslav Argenberg", "license": "CC BY 4.0", "page": "https://commons.wikimedia.org/wiki/File:Koh_Lipe_(island),_Tropical_beach,_Thailand.jpg"}, {"id": "026", "cat": "Blue Skies", "w": 520, "h": 293, "title": "White Cumulus Clouds against Blue Sky (3)", "artist": "Lance Vanlewen", "license": "CC BY-SA 4.0", "page": "https://commons.wikimedia.org/wiki/File:White_Cumulus_Clouds_against_Blue_Sky_(3).jpg"}, {"id": "031", "cat": "Green & Growing", "w": 520, "h": 347, "title": "Blue Dasher", "artist": "John Flannery from Richmond County, North Carolina, USA", "license": "CC BY-SA 2.0", "page": "https://commons.wikimedia.org/wiki/File:Blue_Dasher_(18061833880).jpg"}, {"id": "015", "cat": "Up High", "w": 520, "h": 347, "title": "Lofoten, Norway", "artist": "Johannes Groll followhansi", "license": "CC0", "page": "https://commons.wikimedia.org/wiki/File:Lofoten,_Norway_(Unsplash).jpg"}, {"id": "002", "cat": "Bubbles & Water", "w": 520, "h": 390, "title": "Water Droplet on Green Leaf", "artist": "Navaneethpp", "license": "CC BY-SA 4.0", "page": "https://commons.wikimedia.org/wiki/File:Water_Droplet_on_Green_Leaf.jpg"}, {"id": "009", "cat": "Under the Sea", "w": 520, "h": 414, "title": "Coral reef fish pacific blue tan paracanthurus hepatus", "artist": "Jim Maragos, U.S. Fish and Wildlife Service", "license": "Public domain", "page": "https://commons.wikimedia.org/wiki/File:Coral_reef_fish_pacific_blue_tan_paracanthurus_hepatus.jpg"}, {"id": "037", "cat": "Lagoons", "w": 520, "h": 347, "title": "Koh Lipe (island), Tropical beach 2, Thailand", "artist": "Vyacheslav Argenberg", "license": "CC BY 4.0", "page": "https://commons.wikimedia.org/wiki/File:Koh_Lipe_(island),_Tropical_beach_2,_Thailand.jpg"}, {"id": "027", "cat": "Blue Skies", "w": 520, "h": 335, "title": "White Cumulus Clouds against Blue Sky (4)", "artist": "Lance Vanlewen", "license": "CC BY-SA 4.0", "page": "https://commons.wikimedia.org/wiki/File:White_Cumulus_Clouds_against_Blue_Sky_(4).jpg"}, {"id": "046", "cat": "Green & Growing", "w": 520, "h": 390, "title": "Butterfly Luc Viatour", "artist": "Luc Viatour", "license": "CC BY-SA 3.0", "page": "https://commons.wikimedia.org/wiki/File:Butterfly_Luc_Viatour.JPG"}, {"id": "016", "cat": "Up High", "w": 347, "h": 520, "title": "Multicolored aurora borealis pillar over Brastad", "artist": "W.carter", "license": "CC BY-SA 4.0", "page": "https://commons.wikimedia.org/wiki/File:Multicolored_aurora_borealis_pillar_over_Brastad.jpg"}, {"id": "003", "cat": "Bubbles & Water", "w": 520, "h": 362, "title": "Water droplets on a late cotoneaster (Cotoneaster coriaceus) leaf, Jardim da Fundação Calouste Gulbenkian, Lisbon, Portugal julesvernex2", "artist": "Jules Verne Times Two", "license": "CC BY-SA 4.0", "page": "https://commons.wikimedia.org/wiki/File:Water_droplets_on_a_late_cotoneaster_(Cotoneaster_coriaceus)_leaf,_Jardim_da_Funda%C3%A7%C3%A3o_Calouste_Gulbenkian,_Lisbon,_Portugal_julesvernex2.jpg"}, {"id": "010", "cat": "Under the Sea", "w": 520, "h": 390, "title": "Coral reef near Marsa Alam", "artist": "Thomas Hubauer", "license": "CC BY-SA 2.0", "page": "https://commons.wikimedia.org/wiki/File:Coral_reef_near_Marsa_Alam.jpg"}, {"id": "038", "cat": "Lagoons", "w": 520, "h": 347, "title": "Koh Lipe (island), Tropical lagoon, Thailand", "artist": "Vyacheslav Argenberg", "license": "CC BY 4.0", "page": "https://commons.wikimedia.org/wiki/File:Koh_Lipe_(island),_Tropical_lagoon,_Thailand.jpg"}, {"id": "028", "cat": "Blue Skies", "w": 520, "h": 293, "title": "White Cumulus Clouds against Blue Sky with Sun Shining", "artist": "Lance Vanlewen", "license": "CC BY-SA 4.0", "page": "https://commons.wikimedia.org/wiki/File:White_Cumulus_Clouds_against_Blue_Sky_with_Sun_Shining.jpg"}, {"id": "047", "cat": "Green & Growing", "w": 520, "h": 347, "title": "Lysandra coridon (Chalkhill blue butterfly) male worn", "artist": "Charles J. Sharp", "license": "CC BY-SA 4.0", "page": "https://commons.wikimedia.org/wiki/File:Lysandra_coridon_(Chalkhill_blue_butterfly)_male_worn.jpg"}, {"id": "084", "cat": "Up High", "w": 520, "h": 344, "title": "Cyclone Catarina from the ISS on March 26 2004", "artist": "Astronaut photograph ISS008-E-19646 was taken March 7, 2004, with a Kodak DCS760", "license": "Public domain", "page": "https://commons.wikimedia.org/wiki/File:Cyclone_Catarina_from_the_ISS_on_March_26_2004.JPG"}, {"id": "004", "cat": "Bubbles & Water", "w": 520, "h": 347, "title": "Soap bubble", "artist": "Hyunsu Kim", "license": "CC BY-SA 3.0", "page": "https://commons.wikimedia.org/wiki/File:Soap_bubble.JPG"}, {"id": "011", "cat": "Under the Sea", "w": 520, "h": 347, "title": "Underwater photo of coral reef", "artist": "Jerry Reid, U.S. Fish and Wildlife Service", "license": "Public domain", "page": "https://commons.wikimedia.org/wiki/File:Underwater_photo_of_coral_reef.jpg"}, {"id": "039", "cat": "Lagoons", "w": 520, "h": 347, "title": "Malapascua (island), Tropical beach, Philippines", "artist": "Vyacheslav Argenberg", "license": "CC BY 4.0", "page": "https://commons.wikimedia.org/wiki/File:Malapascua_(island),_Tropical_beach,_Philippines.jpg"}, {"id": "042", "cat": "Blue Skies", "w": 520, "h": 347, "title": "Hot-air balloon in Tambov - 02", "artist": "Alexander Novikov", "license": "CC BY-SA 4.0", "page": "https://commons.wikimedia.org/wiki/File:Hot-air_balloon_in_Tambov_-_02.jpg"}, {"id": "048", "cat": "Green & Growing", "w": 520, "h": 334, "title": "Nelumbo lutea", "artist": "liz west from Boxborough, MA", "license": "CC BY 2.0", "page": "https://commons.wikimedia.org/wiki/File:Nelumbo_lutea.jpg"}, {"id": "085", "cat": "Up High", "w": 520, "h": 347, "title": "Dramatic Views of Hurricane Florence from the International Space Station From 9 12", "artist": "NASA/Goddard Space Flight Center", "license": "CC BY 2.0", "page": "https://commons.wikimedia.org/wiki/File:Dramatic_Views_of_Hurricane_Florence_from_the_International_Space_Station_From_9_12_(42828603210).jpg"}, {"id": "005", "cat": "Bubbles & Water", "w": 520, "h": 464, "title": "Soap bubble reglects the sky and the trees", "artist": "Brocken Inaglory", "license": "CC BY-SA 3.0", "page": "https://commons.wikimedia.org/wiki/File:Soap_bubble_reglects_the_sky_and_the_trees.jpg"}, {"id": "012", "cat": "Under the Sea", "w": 520, "h": 390, "title": "Two dolphins jump", "artist": "CaptainDarwin", "license": "CC BY-SA 4.0", "page": "https://commons.wikimedia.org/wiki/File:Two_dolphins_jump.jpg"}, {"id": "040", "cat": "Lagoons", "w": 520, "h": 347, "title": "Malapascua (island), Tropical beach, Turquoise water, Philippines", "artist": "Vyacheslav Argenberg", "license": "CC BY 4.0", "page": "https://commons.wikimedia.org/wiki/File:Malapascua_(island),_Tropical_beach,_Turquoise_water,_Philippines.jpg"}, {"id": "043", "cat": "Blue Skies", "w": 520, "h": 347, "title": "Hot-air balloon in Tambov - 03", "artist": "Alexander Novikov", "license": "CC BY-SA 4.0", "page": "https://commons.wikimedia.org/wiki/File:Hot-air_balloon_in_Tambov_-_03.jpg"}, {"id": "055", "cat": "Green & Growing", "w": 520, "h": 347, "title": "Backlit", "artist": "Susanne Nilsson", "license": "CC BY-SA 2.0", "page": "https://commons.wikimedia.org/wiki/File:Backlit_(14234047217).jpg"}, {"id": "086", "cat": "Up High", "w": 520, "h": 346, "title": "ISS-38 Hawaiian Island chain", "artist": "NASA", "license": "Public domain", "page": "https://commons.wikimedia.org/wiki/File:ISS-38_Hawaiian_Island_chain.jpg"}, {"id": "006", "cat": "Bubbles & Water", "w": 520, "h": 347, "title": "Sunlight reflections on soap bubble", "artist": "Basile Morin", "license": "CC BY-SA 4.0", "page": "https://commons.wikimedia.org/wiki/File:Sunlight_reflections_on_soap_bubble.jpg"}, {"id": "017", "cat": "Under the Sea", "w": 520, "h": 390, "title": "Jellyfish Aquarium Genoa 02", "artist": "Superchilum", "license": "CC BY-SA 4.0", "page": "https://commons.wikimedia.org/wiki/File:Jellyfish_Aquarium_Genoa_02.JPG"}, {"id": "041", "cat": "Lagoons", "w": 520, "h": 347, "title": "Shaheed Island, Andamans, Bay, Turquoise water", "artist": "Vyacheslav Argenberg", "license": "CC BY 4.0", "page": "https://commons.wikimedia.org/wiki/File:Shaheed_Island,_Andamans,_Bay,_Turquoise_water.jpg"}, {"id": "044", "cat": "Blue Skies", "w": 520, "h": 407, "title": "Hot air balloon and moon", "artist": "Tomascastelazo", "license": "CC BY-SA 3.0", "page": "https://commons.wikimedia.org/wiki/File:Hot_air_balloon_and_moon.jpg"}, {"id": "056", "cat": "Green & Growing", "w": 520, "h": 347, "title": "Backlit green poinsettia leaf", "artist": "Fasaxc", "license": "CC BY-SA 3.0", "page": "https://commons.wikimedia.org/wiki/File:Backlit_green_poinsettia_leaf.jpg"}, {"id": "087", "cat": "Up High", "w": 520, "h": 336, "title": "ISS-66 Atmospheric plume from 2022 Hunga Tonga eruption - edited", "artist": "NASA / Kayla Barron", "license": "Public domain", "page": "https://commons.wikimedia.org/wiki/File:ISS-66_Atmospheric_plume_from_2022_Hunga_Tonga_eruption_-_edited.jpg"}, {"id": "022", "cat": "Bubbles & Water", "w": 520, "h": 347, "title": "Rain Drops On The Window", "artist": "Joshua Sampson", "license": "CC BY 3.0", "page": "https://commons.wikimedia.org/wiki/File:Rain_Drops_On_The_Window_(68419527).jpeg"}, {"id": "018", "cat": "Under the Sea", "w": 520, "h": 345, "title": "Jellyfish Aquarium Genoa 08", "artist": "Superchilum", "license": "CC BY-SA 4.0", "page": "https://commons.wikimedia.org/wiki/File:Jellyfish_Aquarium_Genoa_08.JPG"}, {"id": "089", "cat": "Lagoons", "w": 520, "h": 347, "title": "Coral, Bacuit Bay, El Nido, Palawan, Philippines", "artist": "Vyacheslav Argenberg", "license": "CC BY 4.0", "page": "https://commons.wikimedia.org/wiki/File:Coral,_Bacuit_Bay,_El_Nido,_Palawan,_Philippines.jpg"}, {"id": "045", "cat": "Blue Skies", "w": 520, "h": 347, "title": "Hot air balloons IMGP1798p", "artist": "Alexey V. Kurochkin", "license": "CC BY-SA 4.0", "page": "https://commons.wikimedia.org/wiki/File:Hot_air_balloons_IMGP1798p.jpg"}, {"id": "057", "cat": "Green & Growing", "w": 520, "h": 347, "title": "Maple Leaf", "artist": "Peter Balcerzak", "license": "CC BY-SA 3.0", "page": "https://commons.wikimedia.org/wiki/File:Maple_Leaf_(178908605).jpeg"}, {"id": "088", "cat": "Up High", "w": 520, "h": 392, "title": "ISS March 2009", "artist": "National Aeronautics and Space Administration (Q23548)", "license": "Public domain", "page": "https://commons.wikimedia.org/wiki/File:ISS_March_2009.jpg"}, {"id": "023", "cat": "Bubbles & Water", "w": 520, "h": 346, "title": "Rain is gone", "artist": "Vladimer Shioshvili", "license": "CC BY-SA 2.0", "page": "https://commons.wikimedia.org/wiki/File:Rain_is_gone_-_Flickr_-_shioshvili.jpg"}, {"id": "019", "cat": "Under the Sea", "w": 520, "h": 390, "title": "Jellyfish Boston Aquarium Boston Massachusetts", "artist": "User:MVASCO", "license": "CC BY-SA 3.0", "page": "https://commons.wikimedia.org/wiki/File:Jellyfish_Boston_Aquarium_Boston_Massachusetts.jpeg"}, {"id": "090", "cat": "Lagoons", "w": 520, "h": 349, "title": "La Gran Barrera 1", "artist": "LBM1948", "license": "CC BY-SA 4.0", "page": "https://commons.wikimedia.org/wiki/File:La_Gran_Barrera_1.jpg"}, {"id": "069", "cat": "Blue Skies", "w": 520, "h": 346, "title": "Sky and meadow - Angarnssjöängen, Stockholm", "artist": "Tommie Hansen", "license": "CC BY 3.0", "page": "https://commons.wikimedia.org/wiki/File:Sky_and_meadow_-_Angarnssj%C3%B6%C3%A4ngen,_Stockholm_-_panoramio.jpg"}, {"id": "058", "cat": "Green & Growing", "w": 520, "h": 355, "title": "2021 Sagano Bamboo forest in Arashiyama, Kyoto, Japan", "artist": "Naokijp", "license": "CC BY-SA 4.0", "page": "https://commons.wikimedia.org/wiki/File:2021_Sagano_Bamboo_forest_in_Arashiyama,_Kyoto,_Japan.jpg"}, {"id": "030", "cat": "Bubbles & Water", "w": 520, "h": 347, "title": "Water drop 001", "artist": "José Manuel Suárez from Spain", "license": "CC BY 2.0", "page": "https://commons.wikimedia.org/wiki/File:Water_drop_001.jpg"}, {"id": "020", "cat": "Under the Sea", "w": 520, "h": 520, "title": "Jellyfish in blue aquarium", "artist": "KSC60", "license": "CC BY-SA 4.0", "page": "https://commons.wikimedia.org/wiki/File:Jellyfish_in_blue_aquarium.jpg"}, {"id": "091", "cat": "Lagoons", "w": 520, "h": 336, "title": "La Gran Barrera 3", "artist": "LBM1948", "license": "CC BY-SA 4.0", "page": "https://commons.wikimedia.org/wiki/File:La_Gran_Barrera_3.jpg"}, {"id": "078", "cat": "Blue Skies", "w": 520, "h": 347, "title": "Cherry Blossoms", "artist": "Doug Hay", "license": "CC BY 2.0", "page": "https://commons.wikimedia.org/wiki/File:Cherry_Blossoms_(5673534326).jpg"}, {"id": "059", "cat": "Green & Growing", "w": 520, "h": 347, "title": "Bamboo Grove", "artist": "Strangeeye 294", "license": "CC BY 3.0", "page": "https://commons.wikimedia.org/wiki/File:Bamboo_Grove_(215912603).jpeg"}, {"id": "032", "cat": "Bubbles & Water", "w": 520, "h": 346, "title": "Twisted House", "artist": "Jeff Kubina from Columbia, Maryland", "license": "CC BY-SA 2.0", "page": "https://commons.wikimedia.org/wiki/File:Twisted_House_-_Flickr_-_Jeff_Kubina.jpg"}, {"id": "021", "cat": "Under the Sea", "w": 520, "h": 306, "title": "Sea Nettle Jellyfish New England Aquarium Boston Massachusetts", "artist": "EgorovaSvetlana", "license": "CC BY-SA 4.0", "page": "https://commons.wikimedia.org/wiki/File:Sea_Nettle_Jellyfish_New_England_Aquarium_Boston_Massachusetts.jpg"}, {"id": "092", "cat": "Lagoons", "w": 520, "h": 345, "title": "La Gran Barrera 6", "artist": "LBM1948", "license": "CC BY-SA 4.0", "page": "https://commons.wikimedia.org/wiki/File:La_Gran_Barrera_6.jpg"}, {"id": "079", "cat": "Blue Skies", "w": 520, "h": 346, "title": "Sun blazing over a pristine sand bunker on a perfectly manicured golf course", "artist": "PattayaPatrol", "license": "CC BY-SA 4.0", "page": "https://commons.wikimedia.org/wiki/File:DZ6_2477_Sun_blazing_over_a_pristine_sand_bunker_on_a_perfectly_manicured_golf_course.jpg"}, {"id": "060", "cat": "Green & Growing", "w": 520, "h": 339, "title": "Blue song", "artist": "Dhilung Kirat from Santa Barbara, CA (Uploaded by russavia)", "license": "CC BY 2.0", "page": "https://commons.wikimedia.org/wiki/File:Blue_song_(3362076541).jpg"}, {"id": "033", "cat": "Bubbles & Water", "w": 520, "h": 338, "title": "Dew drops on blade of grass in the morning", "artist": "Massimo brizzi", "license": "CC BY-SA 4.0", "page": "https://commons.wikimedia.org/wiki/File:Dew_drops_on_blade_of_grass_in_the_morning.jpg"}, {"id": "024", "cat": "Under the Sea", "w": 520, "h": 347, "title": "Koi pond in Crimea", "artist": "Кому горят мои георгины?", "license": "CC BY-SA 4.0", "page": "https://commons.wikimedia.org/wiki/File:Koi_pond_in_Crimea.jpg"}, {"id": "093", "cat": "Blue Skies", "w": 520, "h": 347, "title": "Wind turbine near Green Holes Farm", "artist": "Bill Boaden", "license": "CC BY-SA 2.0", "page": "https://commons.wikimedia.org/wiki/File:Wind_turbine_near_Green_Holes_Farm_-_geograph.org.uk_-_6197149.jpg"}, {"id": "061", "cat": "Green & Growing", "w": 520, "h": 390, "title": "Ne m'oubliez pas", "artist": "Martin Cooper from Ipswich, UK", "license": "CC BY 2.0", "page": "https://commons.wikimedia.org/wiki/File:Ne_m%27oubliez_pas_(17480947035).jpg"}, {"id": "034", "cat": "Bubbles & Water", "w": 520, "h": 347, "title": "Shiny drops of water on the grass", "artist": "Denis Vahrushev from Izhevsk, Russia", "license": "CC BY 2.0", "page": "https://commons.wikimedia.org/wiki/File:Shiny_drops_of_water_on_the_grass_(27378037979).jpg"}, {"id": "029", "cat": "Under the Sea", "w": 520, "h": 347, "title": "Humpback whale jump and splash Photo by Giles Laurent", "artist": "Giles Laurent", "license": "CC BY-SA 4.0", "page": "https://commons.wikimedia.org/wiki/File:026b_Humpback_whale_jump_and_splash_Photo_by_Giles_Laurent.jpg"}, {"id": "063", "cat": "Green & Growing", "w": 520, "h": 390, "title": "Rainbow under Waterfall", "artist": "Kevin Kandlbinder", "license": "CC BY 4.0", "page": "https://commons.wikimedia.org/wiki/File:Rainbow_under_Waterfall.jpg"}, {"id": "062", "cat": "Bubbles & Water", "w": 520, "h": 347, "title": "Vibrant raindrops on glass with a blurred urban bokeh light background", "artist": "Bhullargraphic", "license": "CC BY-SA 4.0", "page": "https://commons.wikimedia.org/wiki/File:Vibrant_raindrops_on_glass_with_a_blurred_urban_bokeh_light_background.jpg"}, {"id": "049", "cat": "Under the Sea", "w": 520, "h": 346, "title": "Pygoscelis papua -Nagasaki Penguin Aquarium -swimming underwater-8a", "artist": "Ken FUNAKOSHI", "license": "CC BY-SA 2.0", "page": "https://commons.wikimedia.org/wiki/File:Pygoscelis_papua_-Nagasaki_Penguin_Aquarium_-swimming_underwater-8a.jpg"}, {"id": "082", "cat": "Green & Growing", "w": 409, "h": 520, "title": "Batad, Banaue Rice Terraces with Homes Cira 2000", "artist": "Randy Levine", "license": "CC BY-SA 4.0", "page": "https://commons.wikimedia.org/wiki/File:Batad,_Banaue_Rice_Terraces_with_Homes_Cira_2000.jpg"}, {"id": "064", "cat": "Bubbles & Water", "w": 520, "h": 449, "title": "Schneeglöckchen in Glaskugel", "artist": "YvoBentele", "license": "CC BY-SA 4.0", "page": "https://commons.wikimedia.org/wiki/File:2016-02-27_Schneegl%C3%B6ckchen_in_Glaskugel.jpg"}, {"id": "050", "cat": "Under the Sea", "w": 520, "h": 347, "title": "Underwater World", "artist": "Liza Khlebnikova", "license": "CC0", "page": "https://commons.wikimedia.org/wiki/File:Underwater_World_(154510069).jpeg"}, {"id": "083", "cat": "Green & Growing", "w": 520, "h": 345, "title": "Dragon's Backbone Rice Terraces (Longsheng)", "artist": "Raffaele Nicolussi", "license": "CC BY 3.0", "page": "https://commons.wikimedia.org/wiki/File:Dragon%27s_Backbone_Rice_Terraces_(Longsheng)_-_panoramio_(1).jpg"}, {"id": "065", "cat": "Bubbles & Water", "w": 520, "h": 390, "title": "Aaron Burden 2017-03-16", "artist": "Aaron Burden aaronburden", "license": "CC0", "page": "https://commons.wikimedia.org/wiki/File:Aaron_Burden_2017-03-16_(Unsplash_oopG2XDsSmc).jpg"}, {"id": "051", "cat": "Under the Sea", "w": 520, "h": 347, "title": "Green turtle swimming out for a breath at the GBR", "artist": "Ppmh21", "license": "CC BY-SA 4.0", "page": "https://commons.wikimedia.org/wiki/File:Green_turtle_swimming_out_for_a_breath_at_the_GBR.jpg"}, {"id": "094", "cat": "Green & Growing", "w": 520, "h": 360, "title": "Colibrí Cola de Oro (Golden-tailed Sapphire Hummingbird) Bigger File", "artist": "Marcial4", "license": "CC BY-SA 3.0", "page": "https://commons.wikimedia.org/wiki/File:Colibr%C3%AD_Cola_de_Oro_(Golden-tailed_Sapphire_Hummingbird)_Bigger_File.jpg"}, {"id": "066", "cat": "Bubbles & Water", "w": 520, "h": 344, "title": "GlassSPHERE", "artist": "THOR", "license": "CC BY 2.0", "page": "https://commons.wikimedia.org/wiki/File:GlassSPHERE_(3025185801).jpg"}, {"id": "052", "cat": "Under the Sea", "w": 520, "h": 390, "title": "Sea turtle at SeaWorld San Diego 01", "artist": "Holly Cheng", "license": "CC BY-SA 4.0", "page": "https://commons.wikimedia.org/wiki/File:Sea_turtle_at_SeaWorld_San_Diego_01.JPG"}, {"id": "095", "cat": "Green & Growing", "w": 520, "h": 416, "title": "Sword-billed hummingbird (male) at Guango Lodge, Ecuador", "artist": "Andy Morffew from Itchen Abbas, Hampshire, UK", "license": "CC BY 2.0", "page": "https://commons.wikimedia.org/wiki/File:Sword-billed_hummingbird_(male)_at_Guango_Lodge,_Ecuador_(21310837273).jpg"}, {"id": "067", "cat": "Bubbles & Water", "w": 520, "h": 390, "title": "Glass scene by DBW-Render", "artist": "Morn", "license": "CC0", "page": "https://commons.wikimedia.org/wiki/File:Glass_scene_by_DBW-Render.png"}, {"id": "053", "cat": "Under the Sea", "w": 520, "h": 520, "title": "Sea turtle swimming", "artist": "Simonverhamme", "license": "CC BY-SA 4.0", "page": "https://commons.wikimedia.org/wiki/File:Sea_turtle_swimming.jpg"}, {"id": "096", "cat": "Green & Growing", "w": 520, "h": 343, "title": "Australia green tree frog (Litoria caerulea) crop", "artist": "LiquidGhoul", "license": "Public domain", "page": "https://commons.wikimedia.org/wiki/File:Australia_green_tree_frog_(Litoria_caerulea)_crop.jpg"}, {"id": "068", "cat": "Bubbles & Water", "w": 520, "h": 335, "title": "Ovario", "artist": "Carlos Adampol Galindo from DF, México", "license": "CC BY-SA 2.0", "page": "https://commons.wikimedia.org/wiki/File:Ovario_(4559358946).jpg"}, {"id": "054", "cat": "Under the Sea", "w": 520, "h": 390, "title": "Sea turtle swimming", "artist": "Randall Ruiz ruizra", "license": "CC0", "page": "https://commons.wikimedia.org/wiki/File:Sea_turtle_swimming_(Unsplash).jpg"}, {"id": "097", "cat": "Green & Growing", "w": 520, "h": 520, "title": "Hyla cinerea 158861789", "artist": "Schyler Brown", "license": "CC0", "page": "https://commons.wikimedia.org/wiki/File:Hyla_cinerea_158861789.jpg"}, {"id": "070", "cat": "Under the Sea", "w": 520, "h": 354, "title": "Amphiprion ocellaris (Clown anemonefish) by Nick Hobgood", "artist": "Nick Hobgood", "license": "CC BY-SA 3.0", "page": "https://commons.wikimedia.org/wiki/File:Amphiprion_ocellaris_(Clown_anemonefish)_by_Nick_Hobgood.jpg"}, {"id": "071", "cat": "Under the Sea", "w": 520, "h": 411, "title": "Cinnamon clownfish right", "artist": "Bruxton", "license": "CC0", "page": "https://commons.wikimedia.org/wiki/File:Cinnamon_clownfish_right.jpg"}, {"id": "072", "cat": "Under the Sea", "w": 520, "h": 390, "title": "Common clownfish", "artist": "Janderk", "license": "Public domain", "page": "https://commons.wikimedia.org/wiki/File:Common_clownfish.jpg"}, {"id": "073", "cat": "Under the Sea", "w": 520, "h": 336, "title": "A Flying Manta ray", "artist": "Siharaditia", "license": "CC BY-SA 4.0", "page": "https://commons.wikimedia.org/wiki/File:A_Flying_Manta_ray.jpg"}, {"id": "074", "cat": "Under the Sea", "w": 520, "h": 345, "title": "Giant Manta AdF", "artist": "Arturo de Frias Marques", "license": "CC BY-SA 4.0", "page": "https://commons.wikimedia.org/wiki/File:Giant_Manta_AdF.jpg"}, {"id": "075", "cat": "Under the Sea", "w": 520, "h": 293, "title": "Manta Ray, Bali, Indonesia", "artist": "7oanna", "license": "CC BY-SA 4.0", "page": "https://commons.wikimedia.org/wiki/File:Manta_Ray,_Bali,_Indonesia.jpg"}, {"id": "076", "cat": "Under the Sea", "w": 520, "h": 390, "title": "Okinawa Churaumi aquarium Manta hdsr Vlux5 01", "artist": "Hyppolyte de Saint-Rambert", "license": "CC BY 4.0", "page": "https://commons.wikimedia.org/wiki/File:Okinawa_Churaumi_aquarium_Manta_hdsr_Vlux5_01.jpg"}, {"id": "077", "cat": "Under the Sea", "w": 520, "h": 390, "title": "Okinawa Churaumi aquarium Manta hdsr Vlux5 02", "artist": "Hyppolyte de Saint-Rambert", "license": "CC BY 4.0", "page": "https://commons.wikimedia.org/wiki/File:Okinawa_Churaumi_aquarium_Manta_hdsr_Vlux5_02.jpg"}, {"id": "080", "cat": "Under the Sea", "w": 520, "h": 334, "title": "OCNMS - orca breach", "artist": "National Marine Sanctuaries", "license": "Public domain", "page": "https://commons.wikimedia.org/wiki/File:OCNMS_-_orca_breach_(27230141514).jpg"}, {"id": "081", "cat": "Under the Sea", "w": 520, "h": 347, "title": "Orca, Killer Whale, breaching - Morro Bay, CA May 8, 2014 Orcinus orca", "artist": "Mike Baird from Morro Bay, USA", "license": "CC BY 2.0", "page": "https://commons.wikimedia.org/wiki/File:Orca,_Killer_Whale,_breaching_-_Morro_Bay,_CA_May_8,_2014_Orcinus_orca.jpg"}];
+const CATS = ['Bubbles & Water','Under the Sea','Blue Skies','Lagoons','Green & Growing','Up High'];
+const $ = s => document.querySelector(s);
+const store = {
+  get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+};
+let favs = new Set(store.get('aeroFavs',[]));
+let view = store.get('aeroView','All');
+let list = [];
+
+/* ---------- background bubbles ---------- */
+(function(){
+  const b=$('#bgBubbles');
+  for(let i=0;i<16;i++){
+    const s=document.createElement('span'),z=20+Math.random()*70;
+    s.style.cssText=`left:${Math.random()*100}%;width:${z}px;height:${z}px;animation-duration:${14+Math.random()*18}s;animation-delay:${-Math.random()*30}s;--dx:${(Math.random()-.5)*160}px;opacity:${.5+Math.random()*.5}`;
+    b.appendChild(s);
+  }
+})();
+
+/* ---------- nav ---------- */
+function buildBar(){
+  const tabs=['All',...CATS,'♥ Favourites','Toys'];
+  $('#bar').innerHTML=tabs.map(t=>`<button class="pill${t==='Toys'?' toys':''}${t===view?' on':''}" data-t="${t}">${t==='Toys'?'🫧 Toys':t}</button>`).join('');
+}
+$('#bar').addEventListener('click',e=>{
+  const b=e.target.closest('.pill'); if(!b)return;
+  view=b.dataset.t; store.set('aeroView',view); buildBar(); render();
+  window.scrollTo({top:0,behavior:'smooth'});
+});
+
+/* ---------- gallery ---------- */
+function render(){
+  const main=$('#main');
+  if(view==='Toys'){ main.innerHTML=toysHTML(); return; }
+  list = view==='All' ? ITEMS : view==='♥ Favourites' ? ITEMS.filter(i=>favs.has(i.id)) : ITEMS.filter(i=>i.cat===view);
+  if(!list.length){ main.innerHTML=`<div class="empty">No favourites yet!<br>Tap the ♥ on any picture to keep it here.</div>`; return; }
+  main.innerHTML='<div class="grid">'+list.map((it,n)=>
+    `<div class="card" data-n="${n}"><img loading="lazy" src="img/thumb/${it.id}.jpg" width="${it.w}" height="${it.h}" alt="${esc(it.title)}">
+     <button class="heart${favs.has(it.id)?' on':''}" data-id="${it.id}" aria-label="Favourite">♥</button></div>`).join('')+'</div>';
+}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function toggleFav(id){
+  favs.has(id)?favs.delete(id):favs.add(id); store.set('aeroFavs',[...favs]);
+}
+$('#main').addEventListener('click',e=>{
+  const h=e.target.closest('.heart');
+  if(h){ toggleFav(h.dataset.id); h.classList.toggle('on',favs.has(h.dataset.id)); if(view==='♥ Favourites')render(); return; }
+  const c=e.target.closest('.card'); if(c){ openLB(+c.dataset.n); return; }
+  const t=e.target.closest('.toy'); if(t) openToy(t.dataset.toy);
+});
+
+/* ---------- lightbox ---------- */
+let lbI=0, playing=false, playTimer=null, uiTimer=null;
+const lb=$('#lb'), stage=$('#lbStage');
+if(store.get('aeroFill',false)) lb.classList.add('fill');
+$('#lbFill').classList.toggle('on',lb.classList.contains('fill'));
+function openLB(n){ lbI=n; lb.classList.add('open'); stage.innerHTML=''; show(0); document.body.style.overflow='hidden'; }
+function closeLB(){ stopPlay(); lb.classList.remove('open','hideui'); document.body.style.overflow=''; stage.innerHTML=''; render(); }
+function show(dir){
+  const it=list[lbI];
+  const img=new Image(); img.src=`img/full/${it.id}.jpg`; img.alt=it.title; img.style.opacity=0; img.className='cur';
+  const old=[...stage.children];
+  old.forEach(o=>o.classList.remove('cur'));
+  stage.appendChild(img);
+  const go=()=>{requestAnimationFrame(()=>{img.style.opacity=1; old.forEach(o=>{o.style.opacity=0;setTimeout(()=>o.remove(),950)})})};
+  img.decode?img.decode().then(go,go):(img.onload=go);
+  $('#lbCap').innerHTML=`<b>${esc(it.title)}</b>Photo: ${esc(it.artist)} · ${esc(it.license)} · <a href="${it.page}" target="_blank" rel="noopener">source</a>`;
+  $('#lbHeart').classList.toggle('on',favs.has(it.id));
+  // preload next
+  const nx=list[(lbI+1)%list.length]; if(nx){const p=new Image();p.src=`img/full/${nx.id}.jpg`}
+}
+function step(d){ lbI=(lbI+d+list.length)%list.length; show(d); }
+$('#lbClose').onclick=closeLB;
+$('#lbPrev').onclick=()=>{stopPlay();step(-1)};
+$('#lbNext').onclick=()=>{stopPlay();step(1)};
+$('#lbHeart').onclick=()=>{toggleFav(list[lbI].id);$('#lbHeart').classList.toggle('on',favs.has(list[lbI].id))};
+$('#lbFill').onclick=()=>{lb.classList.toggle('fill');store.set('aeroFill',lb.classList.contains('fill'));$('#lbFill').classList.toggle('on',lb.classList.contains('fill'))};
+$('#lbPlay').onclick=()=>playing?stopPlay():startPlay();
+function startPlay(){ playing=true; lb.classList.add('show'); $('#lbPlay').textContent='❚❚ Pause'; $('#lbPlay').classList.add('on');
+  playTimer=setInterval(()=>step(1),7000); lb.classList.add('hideui'); }
+function stopPlay(){ playing=false; lb.classList.remove('show'); clearInterval(playTimer); $('#lbPlay').textContent='▶ Slideshow'; $('#lbPlay').classList.remove('on'); }
+// swipe + tap to hide/show buttons
+let sx=0,sy=0,st=0;
+stage.addEventListener('pointerdown',e=>{sx=e.clientX;sy=e.clientY;st=Date.now()});
+stage.addEventListener('pointerup',e=>{
+  const dx=e.clientX-sx, dy=e.clientY-sy;
+  if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)){ stopPlay(); lb.classList.remove('hideui'); step(dx<0?1:-1); }
+  else if(dy>90&&Math.abs(dy)>Math.abs(dx)){ closeLB(); }
+  else if(Date.now()-st<400){ lb.classList.toggle('hideui'); }
+});
+document.addEventListener('keydown',e=>{
+  if(!lb.classList.contains('open'))return;
+  if(e.key==='ArrowRight')step(1); else if(e.key==='ArrowLeft')step(-1); else if(e.key==='Escape')closeLB();
+});
+
+/* ---------- sound ---------- */
+let AC=null;
+function ac(){ if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}} if(AC&&AC.state==='suspended')AC.resume(); return AC; }
+function pop(pitch=1){
+  const a=ac(); if(!a)return; const t=a.currentTime;
+  const o=a.createOscillator(), g=a.createGain();
+  o.type='sine'; o.frequency.setValueAtTime(900*pitch,t); o.frequency.exponentialRampToValueAtTime(220*pitch,t+.08);
+  g.gain.setValueAtTime(.35,t); g.gain.exponentialRampToValueAtTime(.001,t+.12);
+  o.connect(g).connect(a.destination); o.start(t); o.stop(t+.13);
+}
+function bell(freq,vol=.25){
+  const a=ac(); if(!a)return; const t=a.currentTime;
+  const out=a.createGain(); out.gain.value=vol; out.connect(a.destination);
+  [[1,1,2.6],[2.01,.45,1.6],[3.0,.22,1.0],[4.2,.12,.6]].forEach(([m,v,d])=>{
+    const o=a.createOscillator(), g=a.createGain(); o.type='sine'; o.frequency.value=freq*m;
+    g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(v,t+.005); g.gain.exponentialRampToValueAtTime(.0005,t+d);
+    o.connect(g).connect(out); o.start(t); o.stop(t+d+.05);
+  });
+}
+function blub(){
+  const a=ac(); if(!a)return; const t=a.currentTime;
+  const o=a.createOscillator(), g=a.createGain(); o.type='sine';
+  const f=300+Math.random()*300; o.frequency.setValueAtTime(f,t); o.frequency.exponentialRampToValueAtTime(f*2.2,t+.09);
+  g.gain.setValueAtTime(.18,t); g.gain.exponentialRampToValueAtTime(.001,t+.12);
+  o.connect(g).connect(a.destination); o.start(t); o.stop(t+.13);
+}
+
+/* ---------- toys ---------- */
+const TOYS = [
+  {id:'bubbles', name:'Bubble Pop', desc:'Pop the shiny bubbles as they float up.', ico:'🫧', bg:'linear-gradient(160deg,#6fd3ff,#1f8fe0 60%,#0a5fb0)'},
+  {id:'fish', name:'Aquarium', desc:'Tap to feed the fish. Poke them to make them zoom.', ico:'🐠', bg:'linear-gradient(160deg,#39e0d0,#0a8fc0 60%,#064f8a)'},
+  {id:'orbs', name:'Shiny Orbs', desc:'Drop glossy orbs on the green hill and watch them bounce.', ico:'🟢', bg:'linear-gradient(160deg,#9ff26a,#3cbf3a 55%,#1b8f5a)'},
+  {id:'ripple', name:'Ripple Pond', desc:'Drag your finger through the water.', ico:'💧', bg:'linear-gradient(160deg,#9ae8ff,#26b0d8 55%,#0d6f9c)'},
+  {id:'chimes', name:'Glass Chimes', desc:'Tap the jelly buttons to play glassy music.', ico:'🎵', bg:'linear-gradient(160deg,#c9a4ff,#6a8cff 50%,#2c6fe0)'},
+  {id:'sky', name:'Cloud Painter', desc:'Paint fluffy clouds in a bright blue sky.', ico:'☁️', bg:'linear-gradient(160deg,#bff0ff,#58b8f0 55%,#1c7fd0)'},
+];
+function toysHTML(){
+  return '<div class="toys">'+TOYS.map(t=>`<div class="toy" data-toy="${t.id}" style="background:${t.bg}"><div class="ico">${t.ico}</div><h3>${t.name}</h3><p>${t.desc}</p></div>`).join('')+'</div>';
+}
+
+const tv=$('#toyView'), cv=$('#toyCanvas'), cx=cv.getContext('2d');
+let W=0,H=0,DPR=1, toy=null, raf=0, last=0;
+function sizeCanvas(){
+  DPR=Math.min(2,window.devicePixelRatio||1); W=tv.clientWidth; H=tv.clientHeight;
+  cv.width=W*DPR; cv.height=H*DPR; cx.setTransform(DPR,0,0,DPR,0,0);
+  toy&&toy.resize&&toy.resize();
+}
+window.addEventListener('resize',()=>{ if(tv.classList.contains('open')) sizeCanvas(); });
+function openToy(id){
+  ac();
+  const T=TOYS.find(t=>t.id===id);
+  tv.classList.add('open'); document.body.style.overflow='hidden';
+  $('#toyTitle').textContent=T.desc; $('#toyBtns').innerHTML='';
+  $('#chimes').classList.remove('open'); cv.style.display='';
+  toy=TOYIMPL[id](); sizeCanvas(); toy.init&&toy.init();
+  last=performance.now(); cancelAnimationFrame(raf);
+  const loop=now=>{ const dt=Math.min(.05,(now-last)/1000); last=now; toy.frame&&toy.frame(dt,now/1000); raf=requestAnimationFrame(loop); };
+  raf=requestAnimationFrame(loop);
+}
+function closeToy(){ cancelAnimationFrame(raf); toy&&toy.stop&&toy.stop(); toy=null; tv.classList.remove('open'); document.body.style.overflow=''; }
+$('#toyClose').onclick=closeToy;
+function addBtn(label,fn){ const b=document.createElement('button'); b.className='gbtn'; b.textContent=label; b.onclick=e=>{e.stopPropagation();fn(b)}; $('#toyBtns').appendChild(b); return b; }
+function pos(e){ const r=cv.getBoundingClientRect(); return [e.clientX-r.left,e.clientY-r.top]; }
+function onPtr(down,move,up){
+  const active=new Map();
+  cv.onpointerdown=e=>{cv.setPointerCapture(e.pointerId);const p=pos(e);active.set(e.pointerId,p);down&&down(p[0],p[1],e.pointerId)};
+  cv.onpointermove=e=>{if(!active.has(e.pointerId))return;const p=pos(e);move&&move(p[0],p[1],e.pointerId,active.get(e.pointerId));active.set(e.pointerId,p)};
+  cv.onpointerup=cv.onpointercancel=e=>{active.delete(e.pointerId);up&&up(e.pointerId)};
+}
+const rnd=(a,b)=>a+Math.random()*(b-a);
+
+// glossy sphere painter shared by toys
+function glossyBall(x,y,r,h,sat=85,alpha=1){
+  cx.save(); cx.globalAlpha=alpha;
+  let g=cx.createRadialGradient(x,y+r*.55,r*.1,x,y,r*1.05);
+  g.addColorStop(0,`hsl(${h} 100% 80%)`); g.addColorStop(.45,`hsl(${h} ${sat}% 52%)`); g.addColorStop(1,`hsl(${h} ${sat}% 28%)`);
+  cx.fillStyle=g; cx.beginPath(); cx.arc(x,y,r,0,7); cx.fill();
+  g=cx.createLinearGradient(0,y-r*.95,0,y);
+  g.addColorStop(0,'rgba(255,255,255,.95)'); g.addColorStop(1,'rgba(255,255,255,.05)');
+  cx.fillStyle=g; cx.beginPath(); cx.ellipse(x,y-r*.45,r*.72,r*.46,0,0,7); cx.fill();
+  cx.strokeStyle='rgba(255,255,255,.45)'; cx.lineWidth=Math.max(1,r*.05); cx.beginPath(); cx.arc(x,y,r*.97,0,7); cx.stroke();
+  cx.restore();
+}
+function skyBG(top='#0b6fb8',mid='#3fa9e0',bot='#bfeeff'){
+  const g=cx.createLinearGradient(0,0,0,H); g.addColorStop(0,top); g.addColorStop(.55,mid); g.addColorStop(1,bot);
+  cx.fillStyle=g; cx.fillRect(0,0,W,H);
+}
+function sunGlow(x,y,r){
+  const g=cx.createRadialGradient(x,y,0,x,y,r); g.addColorStop(0,'rgba(255,255,255,.95)'); g.addColorStop(.12,'rgba(255,255,230,.7)'); g.addColorStop(1,'rgba(255,255,255,0)');
+  cx.fillStyle=g; cx.fillRect(x-r,y-r,r*2,r*2);
+}
+
+const TOYIMPL={
+
+/* ---- Bubble Pop ---- */
+bubbles(){
+  let bs=[], bits=[], count=0, spawn=0;
+  const bokeh=[...Array(22)].map(()=>({x:Math.random(),y:Math.random(),r:rnd(20,90),h:rnd(170,210),s:rnd(.05,.2)}));
+  function add(y){ const r=rnd(22,72); bs.push({x:rnd(r,W-r),y:y??H+r,r,vy:rnd(28,70)*(60/r)**.3,ph:rnd(0,7),hue:rnd(0,360)}); }
+  function burst(b){
+    count++; pop(1.3-b.r/120);
+    for(let i=0;i<14;i++){const a=i/14*Math.PI*2,s=rnd(80,220);bits.push({x:b.x+Math.cos(a)*b.r*.8,y:b.y+Math.sin(a)*b.r*.8,vx:Math.cos(a)*s,vy:Math.sin(a)*s,l:1,h:b.hue+i*20})}
+  }
+  onPtr((x,y)=>{
+    for(let i=bs.length-1;i>=0;i--){const b=bs[i]; if((b.x-x)**2+(b.y-y)**2<(b.r+14)**2){burst(b);bs.splice(i,1);return}}
+  },(x,y)=>{
+    for(let i=bs.length-1;i>=0;i--){const b=bs[i]; if((b.x-x)**2+(b.y-y)**2<b.r**2){burst(b);bs.splice(i,1)}}
+  });
+  addBtn('More bubbles!',()=>{for(let i=0;i<15;i++)add(rnd(H*.3,H+80))});
+  return{
+    init(){for(let i=0;i<10;i++)add(rnd(0,H))},
+    frame(dt,t){
+      skyBG('#0a64b0','#35a2e0','#c4f0ff'); sunGlow(W*.82,H*.12,Math.max(W,H)*.45);
+      for(const k of bokeh){cx.fillStyle=`hsla(${k.h},100%,90%,${k.s})`;cx.beginPath();cx.arc(k.x*W,((k.y-t*.01)%1+1)%1*H,k.r,0,7);cx.fill()}
+      spawn-=dt; if(spawn<=0&&bs.length<26){add();spawn=rnd(.3,.9)}
+      for(let i=bs.length-1;i>=0;i--){
+        const b=bs[i]; b.y-=b.vy*dt; b.ph+=dt*1.6; const x=b.x+Math.sin(b.ph)*10, y=b.y;
+        if(y<-b.r-10){bs.splice(i,1);continue}
+        b.hue+=dt*40;
+        // bubble body
+        let g=cx.createRadialGradient(x,y,b.r*.2,x,y,b.r);
+        g.addColorStop(0,'rgba(255,255,255,.03)'); g.addColorStop(.75,`hsla(${b.hue},100%,85%,.12)`);
+        g.addColorStop(.92,`hsla(${b.hue+60},100%,75%,.45)`); g.addColorStop(1,`hsla(${b.hue+140},100%,90%,.75)`);
+        cx.fillStyle=g; cx.beginPath(); cx.arc(x,y,b.r,0,7); cx.fill();
+        cx.strokeStyle=`hsla(${b.hue+200},100%,85%,.5)`; cx.lineWidth=1.5; cx.beginPath(); cx.arc(x,y,b.r*.96,.2,2.2); cx.stroke();
+        cx.fillStyle='rgba(255,255,255,.85)'; cx.beginPath(); cx.ellipse(x-b.r*.38,y-b.r*.42,b.r*.22,b.r*.12,-.7,0,7); cx.fill();
+        cx.fillStyle='rgba(255,255,255,.5)'; cx.beginPath(); cx.arc(x+b.r*.42,y+b.r*.45,b.r*.07,0,7); cx.fill();
+        b.dx=x;
+      }
+      for(let i=bits.length-1;i>=0;i--){const p=bits[i]; p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=300*dt; p.l-=dt*1.8; if(p.l<=0){bits.splice(i,1);continue}
+        cx.fillStyle=`hsla(${p.h},100%,85%,${p.l})`; cx.beginPath(); cx.arc(p.x,p.y,3.5*p.l+1,0,7); cx.fill()}
+      cx.font='900 26px Nunito,sans-serif'; cx.textAlign='center'; cx.fillStyle='rgba(255,255,255,.95)'; cx.shadowColor='rgba(0,40,90,.5)'; cx.shadowBlur=8;
+      cx.fillText(`🫧 ${count} popped`,W/2,46); cx.shadowBlur=0;
+    }
+  };
+},
+
+/* ---- Aquarium ---- */
+fish(){
+  const fishes=[], food=[], bub=[];
+  const cols=[28,45,190,330,280,55,10,170];
+  function addFish(){ const s=rnd(.7,1.3); fishes.push({x:rnd(60,W-60),y:rnd(H*.2,H*.75),vx:rnd(-40,40),vy:0,s,h:cols[fishes.length%cols.length]+rnd(-8,8),ph:rnd(0,7),dir:1,zoom:0,tx:rnd(0,W),ty:rnd(H*.2,H*.75)}); }
+  const weeds=[...Array(9)].map((_,i)=>({x:(i+.5)/9,h:rnd(.18,.38),ph:rnd(0,7),hue:rnd(95,150)}));
+  onPtr((x,y)=>{
+    for(const f of fishes){ if(Math.hypot(f.x-x,f.y-y)<40*f.s){ f.zoom=1.2; const a=Math.atan2(f.y-y,f.x-x); f.vx=Math.cos(a)*420; f.vy=Math.sin(a)*300; for(let i=0;i<6;i++)bub.push({x:f.x,y:f.y,r:rnd(3,8),v:rnd(40,90)}); blub(); return; } }
+    for(let i=0;i<4;i++) food.push({x:x+rnd(-14,14),y:y+rnd(-8,8),vy:rnd(25,45)}); blub();
+  });
+  addBtn('+ Fish',()=>{ if(fishes.length<18) addFish(); });
+  function drawFish(f,t){
+    const k=f.s*1.0, wag=Math.sin(t*9+f.ph)*(.25+f.zoom*.4);
+    cx.save(); cx.translate(f.x,f.y); cx.scale(f.dir*k,k);
+    // tail
+    cx.save(); cx.translate(-26,0); cx.rotate(wag);
+    let g=cx.createLinearGradient(-24,0,0,0); g.addColorStop(0,`hsla(${f.h},100%,75%,.85)`); g.addColorStop(1,`hsl(${f.h} 90% 50%)`);
+    cx.fillStyle=g; cx.beginPath(); cx.moveTo(4,0); cx.quadraticCurveTo(-14,-22,-24,-18); cx.quadraticCurveTo(-16,0,-24,18); cx.quadraticCurveTo(-14,22,4,0); cx.fill(); cx.restore();
+    // fin
+    cx.fillStyle=`hsla(${f.h},100%,70%,.8)`; cx.beginPath(); cx.moveTo(-6,-14); cx.quadraticCurveTo(4,-30,14,-15); cx.fill();
+    // body
+    g=cx.createRadialGradient(4,10,2,0,0,32); g.addColorStop(0,`hsl(${f.h} 100% 78%)`); g.addColorStop(.5,`hsl(${f.h} 95% 52%)`); g.addColorStop(1,`hsl(${f.h} 90% 32%)`);
+    cx.fillStyle=g; cx.beginPath(); cx.ellipse(0,0,30,18,0,0,7); cx.fill();
+    g=cx.createLinearGradient(0,-18,0,0); g.addColorStop(0,'rgba(255,255,255,.9)'); g.addColorStop(1,'rgba(255,255,255,0)');
+    cx.fillStyle=g; cx.beginPath(); cx.ellipse(2,-8,22,8,0,0,7); cx.fill();
+    // stripe for clownish fish
+    if(f.h<40){cx.fillStyle='rgba(255,255,255,.85)';cx.beginPath();cx.ellipse(6,0,4,16,0,0,7);cx.fill()}
+    // eye
+    cx.fillStyle='#fff'; cx.beginPath(); cx.arc(18,-4,6,0,7); cx.fill();
+    cx.fillStyle='#062a44'; cx.beginPath(); cx.arc(19.5,-4,3.4,0,7); cx.fill();
+    cx.fillStyle='#fff'; cx.beginPath(); cx.arc(20.5,-5.5,1.2,0,7); cx.fill();
+    cx.restore();
+  }
+  return{
+    init(){ for(let i=0;i<7;i++) addFish(); },
+    frame(dt,t){
+      let g=cx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#5fe0ff'); g.addColorStop(.25,'#12a6dc'); g.addColorStop(.8,'#0a5f9e'); g.addColorStop(1,'#073f73');
+      cx.fillStyle=g; cx.fillRect(0,0,W,H);
+      // light rays
+      cx.save(); cx.globalCompositeOperation='lighter';
+      for(let i=0;i<6;i++){ const x=((i/6)+Math.sin(t*.15+i)*.04)*W, w=W*.07;
+        g=cx.createLinearGradient(0,0,0,H*.9); g.addColorStop(0,'rgba(255,255,255,.14)'); g.addColorStop(1,'rgba(255,255,255,0)');
+        cx.fillStyle=g; cx.beginPath(); cx.moveTo(x,0); cx.lineTo(x+w,0); cx.lineTo(x+w*2.6+W*.1,H*.9); cx.lineTo(x+W*.1,H*.9); cx.fill(); }
+      cx.restore();
+      // sand
+      g=cx.createLinearGradient(0,H*.86,0,H); g.addColorStop(0,'#f6e6b0'); g.addColorStop(1,'#d9b877');
+      cx.fillStyle=g; cx.beginPath(); cx.moveTo(0,H); cx.lineTo(0,H*.9); for(let x=0;x<=W+40;x+=40)cx.lineTo(x,H*.9+Math.sin(x*.01)*10); cx.lineTo(W,H); cx.fill();
+      // weeds
+      for(const w of weeds){ const bx=w.x*W, top=H*(.9-w.h); cx.strokeStyle=`hsl(${w.hue} 70% 42%)`; cx.lineWidth=12; cx.lineCap='round';
+        cx.beginPath(); cx.moveTo(bx,H*.92); cx.bezierCurveTo(bx+Math.sin(t+w.ph)*30,H*.8,bx-Math.sin(t*1.2+w.ph)*30,(H*.8+top)/2,bx+Math.sin(t*.9+w.ph)*40,top); cx.stroke();
+        cx.strokeStyle=`hsla(${w.hue},90%,70%,.5)`; cx.lineWidth=3; cx.stroke(); }
+      // food
+      for(let i=food.length-1;i>=0;i--){const p=food[i]; p.y=Math.min(H*.9,p.y+p.vy*dt); p.x+=Math.sin(t*3+i)*.3;
+        cx.fillStyle='#b5651d'; cx.beginPath(); cx.arc(p.x,p.y,4,0,7); cx.fill(); cx.fillStyle='rgba(255,220,160,.8)'; cx.beginPath(); cx.arc(p.x-1,p.y-1.4,1.4,0,7); cx.fill();}
+      // fish
+      for(const f of fishes){
+        let tx=f.tx, ty=f.ty;
+        if(food.length){ let best=null,bd=1e9; for(const p of food){const d=(p.x-f.x)**2+(p.y-f.y)**2; if(d<bd){bd=d;best=p}} tx=best.x; ty=best.y;
+          if(bd<18*18*f.s){ food.splice(food.indexOf(best),1); f.s=Math.min(1.8,f.s+.03); bub.push({x:f.x,y:f.y,r:3,v:60}); blub(); } }
+        else if(Math.hypot(tx-f.x,ty-f.y)<30){ f.tx=rnd(40,W-40); f.ty=rnd(H*.12,H*.8); }
+        const a=Math.atan2(ty-f.y,tx-f.x), sp=food.length?150:55;
+        f.vx+=(Math.cos(a)*sp-f.vx)*dt*1.4; f.vy+=(Math.sin(a)*sp*.6-f.vy)*dt*1.4;
+        f.x+=f.vx*dt; f.y+=f.vy*dt; f.x=Math.max(20,Math.min(W-20,f.x)); f.y=Math.max(30,Math.min(H*.86,f.y));
+        if(Math.abs(f.vx)>6) f.dir=f.vx>0?1:-1; f.zoom=Math.max(0,f.zoom-dt);
+        if(Math.random()<dt*.3) bub.push({x:f.x+f.dir*25*f.s,y:f.y,r:rnd(2,5),v:rnd(30,60)});
+        drawFish(f,t);
+      }
+      // bubbles
+      if(Math.random()<dt*3) bub.push({x:W*rnd(.05,.95),y:H*.92,r:rnd(2,7),v:rnd(40,90)});
+      for(let i=bub.length-1;i>=0;i--){const b=bub[i]; b.y-=b.v*dt; b.x+=Math.sin(b.y*.05)*.4; if(b.y<-10){bub.splice(i,1);continue}
+        cx.strokeStyle='rgba(255,255,255,.7)'; cx.lineWidth=1.3; cx.beginPath(); cx.arc(b.x,b.y,b.r,0,7); cx.stroke();
+        cx.fillStyle='rgba(255,255,255,.8)'; cx.beginPath(); cx.arc(b.x-b.r*.35,b.y-b.r*.35,b.r*.3,0,7); cx.fill();}
+    }
+  };
+},
+
+/* ---- Shiny Orbs ---- */
+orbs(){
+  const orbs=[]; let hue=190, dragging=null, spawnT=0;
+  function add(x,y){ const r=rnd(22,46); orbs.push({x,y,vx:rnd(-60,60),vy:0,r,h:hue}); hue=(hue+23)%360; if(orbs.length>70)orbs.shift(); }
+  function hillY(x){ return H*.78 - Math.sin(x/W*Math.PI)*H*.12; }
+  onPtr((x,y)=>{
+    for(const o of orbs){ if(Math.hypot(o.x-x,o.y-y)<o.r){ dragging=o; o.vx=o.vy=0; return; } }
+    add(x,y); pop(.8); dragging=null; spawnT=0;
+  },(x,y,id,prev)=>{
+    if(dragging){ dragging.vx=(x-prev[0])*50; dragging.vy=(y-prev[1])*50; dragging.x=x; dragging.y=y; }
+    else { spawnT++; if(spawnT%6===0){add(x,y)} }
+  },()=>{dragging=null});
+  addBtn('Clear',()=>{orbs.length=0});
+  addBtn('Rain orbs',()=>{for(let i=0;i<14;i++)setTimeout(()=>add(rnd(40,W-40),-40),i*90)});
+  let lastBonk=0;
+  return{
+    frame(dt,t){
+      skyBG('#0a6cc0','#48b4ef','#d6f5ff'); sunGlow(W*.2,H*.1,Math.max(W,H)*.5);
+      // clouds
+      cx.fillStyle='rgba(255,255,255,.85)';
+      for(let i=0;i<4;i++){const cxp=((i*.3+t*.01)%1.3-.15)*W, cyp=H*(.12+i*.06); [[0,0,24],[26,-14,30],[56,-6,28],[82,4,20],[40,8,26],[14,10,20],[68,10,20]].forEach(([a,b,r])=>{cx.beginPath();cx.arc(cxp+a,cyp+b,r,0,7);cx.fill()})}
+      // hill (Bliss-ish)
+      let g=cx.createLinearGradient(0,H*.6,0,H); g.addColorStop(0,'#8fe04a'); g.addColorStop(.4,'#4bb52c'); g.addColorStop(1,'#1f7a1a');
+      cx.fillStyle=g; cx.beginPath(); cx.moveTo(0,H); for(let x=0;x<=W+10;x+=10)cx.lineTo(x,hillY(x)); cx.lineTo(W+10,H); cx.fill();
+      cx.strokeStyle='rgba(220,255,160,.6)'; cx.lineWidth=3; cx.beginPath(); for(let x=0;x<=W+10;x+=10)cx.lineTo(x,hillY(x)); cx.stroke();
+      // physics (sub-steps)
+      const n=3, h=dt/n;
+      for(let s=0;s<n;s++){
+        for(const o of orbs){ if(o===dragging)continue; o.vy+=900*h; o.x+=o.vx*h; o.y+=o.vy*h;
+          if(o.x<o.r){o.x=o.r;o.vx=Math.abs(o.vx)*.7} if(o.x>W-o.r){o.x=W-o.r;o.vx=-Math.abs(o.vx)*.7}
+          const gy=hillY(o.x); if(o.y+o.r>gy){ o.y=gy-o.r; const slope=(hillY(o.x+2)-hillY(o.x-2))/4; if(o.vy>200&&performance.now()-lastBonk>60){bell(300+o.h*2,.05);lastBonk=performance.now()} o.vy=-Math.abs(o.vy)*.55; o.vx+= slope*260*h*10; o.vx*=.995; } }
+        for(let i=0;i<orbs.length;i++)for(let j=i+1;j<orbs.length;j++){const a=orbs[i],b=orbs[j],dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy),m=a.r+b.r;
+          if(d<m&&d>0){const nx=dx/d,ny=dy/d,ov=(m-d)/2; a.x-=nx*ov;a.y-=ny*ov;b.x+=nx*ov;b.y+=ny*ov;
+            const rv=(b.vx-a.vx)*nx+(b.vy-a.vy)*ny; if(rv<0){const imp=-rv*.8; a.vx-=nx*imp/2;a.vy-=ny*imp/2;b.vx+=nx*imp/2;b.vy+=ny*imp/2}}}
+      }
+      for(const o of orbs){ // shadow
+        cx.fillStyle='rgba(0,50,0,.18)'; cx.beginPath(); cx.ellipse(o.x,hillY(o.x),o.r*.9,o.r*.2,0,0,7); cx.fill(); }
+      for(const o of orbs) glossyBall(o.x,o.y,o.r,o.h);
+      if(!orbs.length){ cx.font='900 24px Nunito,sans-serif'; cx.textAlign='center'; cx.fillStyle='#fff'; cx.shadowColor='rgba(0,40,90,.5)'; cx.shadowBlur=8; cx.fillText('Tap or drag anywhere to make orbs',W/2,H*.45); cx.shadowBlur=0; }
+    }
+  };
+},
+
+/* ---- Ripple Pond ---- */
+ripple(){
+  let picI=0, img=new Image(), sw=0, sh=0, cur, prev, tex=null, out=null, off=document.createElement('canvas'), oc=off.getContext('2d');
+  function setup(){
+    sw=Math.max(200,Math.round(W/2.2)); sh=Math.max(150,Math.round(H/2.2));
+    off.width=sw; off.height=sh; cur=new Float32Array(sw*sh); prev=new Float32Array(sw*sh);
+    if(img.complete&&img.naturalWidth){ const r=Math.max(sw/img.naturalWidth,sh/img.naturalHeight), iw=img.naturalWidth*r, ih=img.naturalHeight*r;
+      oc.drawImage(img,(sw-iw)/2,(sh-ih)/2,iw,ih); tex=oc.getImageData(0,0,sw,sh); out=oc.createImageData(sw,sh); }
+  }
+  function load(){ img=new Image(); img.onload=setup; img.src=`img/full/${RIPPLE_PICS[picI]}.jpg`; }
+  function drop(x,y,s=260,rad=3){ const gx=Math.round(x/W*sw), gy=Math.round(y/H*sh);
+    for(let j=-rad;j<=rad;j++)for(let i=-rad;i<=rad;i++){const X=gx+i,Y=gy+j; if(X>0&&Y>0&&X<sw-1&&Y<sh-1&&i*i+j*j<=rad*rad) prev[Y*sw+X]+=s;} }
+  let lastSnd=0;
+  onPtr((x,y)=>{drop(x,y,500,4); blub()},(x,y)=>{drop(x,y,180,3); if(performance.now()-lastSnd>180){lastSnd=performance.now(); if(Math.random()<.5)blub()}});
+  addBtn('New picture',()=>{picI=(picI+1)%RIPPLE_PICS.length; load()});
+  addBtn('Rain',b=>{rain=!rain;b.classList.toggle('on',rain)});
+  let rain=false;
+  return{
+    init(){ load(); },
+    resize(){ if(img.complete) setup(); },
+    frame(dt,t){
+      if(!tex){ cx.fillStyle='#0a6fa0'; cx.fillRect(0,0,W,H); return; }
+      if(rain&&Math.random()<.5) drop(rnd(0,W),rnd(0,H),220,2);
+      if(Math.random()<.01) drop(rnd(0,W),rnd(0,H),200,2);
+      // wave step
+      for(let y=1;y<sh-1;y++){ const r=y*sw; for(let x=1;x<sw-1;x++){ const i=r+x;
+        cur[i]=((prev[i-1]+prev[i+1]+prev[i-sw]+prev[i+sw])/2-cur[i])*.975; } }
+      const tmp=prev; prev=cur; cur=tmp;
+      const d=tex.data, o=out.data;
+      for(let y=1;y<sh-1;y++){ const r=y*sw; for(let x=1;x<sw-1;x++){ const i=r+x;
+        const dx=prev[i-1]-prev[i+1], dy=prev[i-sw]-prev[i+sw];
+        let sx=x+(dx>>3), sy=y+(dy>>3); if(sx<0)sx=0; else if(sx>=sw)sx=sw-1; if(sy<0)sy=0; else if(sy>=sh)sy=sh-1;
+        const si=(sy*sw+sx)*4, oi=i*4, sh2=dx*.25;
+        o[oi]=d[si]+sh2; o[oi+1]=d[si+1]+sh2; o[oi+2]=d[si+2]+sh2; o[oi+3]=255; } }
+      oc.putImageData(out,0,0);
+      cx.imageSmoothingEnabled=true; cx.drawImage(off,1,1,sw-2,sh-2,0,0,W,H);
+      // gloss
+      const g=cx.createLinearGradient(0,0,0,H*.4); g.addColorStop(0,'rgba(255,255,255,.18)'); g.addColorStop(1,'rgba(255,255,255,0)'); cx.fillStyle=g; cx.fillRect(0,0,W,H*.4);
+    }
+  };
+},
+
+/* ---- Glass Chimes (DOM) ---- */
+chimes(){
+  cv.style.display='none';
+  const box=$('#chimes'); box.innerHTML=''; box.classList.add('open');
+  tv.style.background='radial-gradient(900px 600px at 50% 0%,#bff0ff,transparent 60%),linear-gradient(180deg,#2a8ee0,#0b4f9a)';
+  const notes=[261.6,293.7,329.6,392,440,523.3,587.3,659.3,784,880,1046.5,1174.7];
+  notes.forEach((f,i)=>{
+    const j=document.createElement('button'); j.className='jelly'; j.style.setProperty('--h',(i*30+170)%360);
+    const hit=e=>{ e.preventDefault(); bell(f); j.classList.remove('hit'); void j.offsetWidth; j.classList.add('hit');
+      const r=document.createElement('div'); r.className='ring'; r.style.setProperty('--h',(i*30+170)%360);
+      const b=j.getBoundingClientRect(); r.style.left=(b.left+b.width/2)+'px'; r.style.top=(b.top+b.height/2)+'px'; r.style.width=r.style.height=b.width+'px';
+      tv.appendChild(r); setTimeout(()=>r.remove(),950); };
+    j.addEventListener('pointerdown',hit);
+    box.appendChild(j);
+  });
+  addBtn('Play a tune',()=>{ const tune=[0,2,4,7,4,2,0,4,7,9,11,9,7]; tune.forEach((n,k)=>setTimeout(()=>box.children[n]&&box.children[n].dispatchEvent(new PointerEvent('pointerdown')),k*260)); });
+  return{ stop(){ box.classList.remove('open'); box.innerHTML=''; tv.style.background=''; cv.style.display=''; } };
+},
+
+/* ---- Cloud Painter ---- */
+sky(){
+  const puffs=[]; let sun=true;
+  function puff(x,y){ puffs.push({x,y,r:rnd(18,40),a:0,vx:rnd(6,14)}); if(puffs.length>900)puffs.shift(); }
+  onPtr((x,y)=>{for(let i=0;i<5;i++)puff(x+rnd(-20,20),y+rnd(-12,12))},(x,y,id,p)=>{const d=Math.hypot(x-p[0],y-p[1]);for(let k=0;k<d;k+=10)puff(p[0]+(x-p[0])*k/d+rnd(-14,14),p[1]+(y-p[1])*k/d+rnd(-10,10))});
+  addBtn('Clear sky',()=>{puffs.length=0});
+  addBtn('Windy',b=>{wind=wind?0:1;b.classList.toggle('on',!!wind)});
+  let wind=0;
+  return{
+    frame(dt,t){
+      skyBG('#0960b8','#3aa6ec','#c9f1ff'); sunGlow(W*.85,H*.15,Math.max(W,H)*.55);
+      // lens flare
+      cx.save(); cx.globalCompositeOperation='lighter';
+      [[.55,.4,40,'rgba(160,255,220,.08)'],[.35,.62,22,'rgba(160,200,255,.1)'],[.2,.8,60,'rgba(200,255,180,.06)']].forEach(([fx,fy,r,c])=>{cx.fillStyle=c;cx.beginPath();cx.arc(W*.85+(W*.5-W*.85)*fx*2.2,H*.15+(H*.5-H*.15)*fy*2.2,r,0,7);cx.fill()});
+      cx.restore();
+      // grass
+      let g=cx.createLinearGradient(0,H*.82,0,H); g.addColorStop(0,'#9ee85a'); g.addColorStop(1,'#2e8f22');
+      cx.fillStyle=g; cx.beginPath(); cx.moveTo(0,H); cx.lineTo(0,H*.88); cx.quadraticCurveTo(W*.35,H*.78,W*.6,H*.86); cx.quadraticCurveTo(W*.85,H*.93,W,H*.84); cx.lineTo(W,H); cx.fill();
+      // clouds: shadow layer then white layer
+      for(const p of puffs){ p.a=Math.min(1,p.a+dt*3); p.x+=p.vx*dt*(wind?8:1); if(p.x-p.r>W)p.x=-p.r*2; }
+      cx.fillStyle='rgba(150,190,225,.35)';
+      for(const p of puffs){cx.beginPath();cx.arc(p.x+3,p.y+p.r*.35,p.r*p.a,0,7);cx.fill()}
+      for(const p of puffs){ const gr=cx.createRadialGradient(p.x-p.r*.2,p.y-p.r*.3,p.r*.1,p.x,p.y,p.r*p.a); gr.addColorStop(0,'#ffffff'); gr.addColorStop(.7,'rgba(255,255,255,.95)'); gr.addColorStop(1,'rgba(235,245,255,.0)');
+        cx.fillStyle=gr; cx.beginPath(); cx.arc(p.x,p.y,p.r*p.a,0,7); cx.fill(); }
+      if(!puffs.length){ cx.font='900 24px Nunito,sans-serif'; cx.textAlign='center'; cx.fillStyle='#fff'; cx.shadowColor='rgba(0,40,90,.5)'; cx.shadowBlur=8; cx.fillText('Drag your finger to paint clouds',W/2,H*.45); cx.shadowBlur=0; }
+    }
+  };
+},
+};
+const RIPPLE_PICS = ["024", "038", "070", "089"];
+
+buildBar(); render();
+// direct links: #toy-bubbles, #photo-024
+(function(){const h=location.hash.slice(1);
+  if(h.startsWith('toy-')&&TOYS.some(t=>t.id===h.slice(4))) openToy(h.slice(4));
+  else if(h.startsWith('photo-')){view='All';buildBar();render();const n=list.findIndex(i=>i.id===h.slice(6));if(n>=0)openLB(n);}
+})();
+</script>
+</body>
+</html>
