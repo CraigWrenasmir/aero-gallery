@@ -170,12 +170,12 @@ footer a{color:#fff}
 .mkBtns .pill{margin:4px;font-size:15px;padding:9px 14px}
 .msnWrap{top:calc(80px + env(safe-area-inset-top));bottom:calc(50px + env(safe-area-inset-bottom))!important;padding:0 14px}
 .msn{display:flex;height:100%;max-width:1000px;margin:0 auto;color:#12324f}
-.win{display:flex;flex-direction:column;border-radius:16px;overflow:hidden;border:2px solid rgba(255,255,255,.9);
+.win{display:flex;flex-direction:column;min-height:0;border-radius:16px;overflow:hidden;border:2px solid rgba(255,255,255,.9);
   background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(232,246,255,.88));box-shadow:0 12px 30px rgba(0,40,90,.35)}
 .win.list{width:36%;min-width:220px;margin-right:14px}
 .win.chat{flex:1}
 .wt{font-weight:900;color:#fff;padding:10px 14px;background:linear-gradient(180deg,#8fdcff,#2a9ee8 50%,#1580d0 51%,#4ab8f5);text-shadow:0 1px 2px rgba(0,40,90,.5)}
-.me,.who{display:flex;align-items:center;padding:10px;border-bottom:1px solid #cfe6f5}
+.me,.who{display:flex;align-items:center;padding:10px;border-bottom:1px solid #cfe6f5;flex:none}
 .me img,.who img{width:64px;height:70px;margin-right:10px}
 .me b,.who b{display:block;font-size:18px}
 .st{font-style:normal;font-weight:800;font-size:13px}
@@ -185,15 +185,16 @@ footer a{color:#fff}
 .brow img{width:48px;height:52px;margin-right:10px}
 .brow b{display:block}
 .brow.sel{background:linear-gradient(180deg,#d8f2ff,#b0e0ff)}
-#clog{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px;font-size:17px;font-weight:700}
+#clog{flex:1 1 auto;min-height:60px;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px;font-size:17px;font-weight:700}
 .msg{margin:0 0 10px}
 .msg b{color:#1a6fd6;font-weight:800}.msg.mine b{color:#2e9e2e}
-.emos{display:flex;flex-wrap:wrap;padding:8px;border-top:1px solid #cfe6f5;background:rgba(255,255,255,.6)}
+.emos{display:flex;flex:none;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:6px 8px;background:rgba(255,255,255,.6)}
+.emo{flex:none}
 .emo{font:inherit;font-size:26px;width:52px;height:52px;margin:4px;border-radius:14px;border:1px solid #fff;cursor:pointer;
   background:linear-gradient(180deg,#fff,#e2f4ff 50%,#cbeaff 51%,#e8f7ff);box-shadow:0 2px 6px rgba(0,50,100,.2)}
 .emo.nudge{width:auto;padding:0 14px;font-size:17px;font-weight:900;color:#fff;background:linear-gradient(180deg,#ffb36b,#ff7a1a 50%,#e8600a 51%,#ff9a3c)}
 .typing{color:#6a8aa8;font-style:italic;font-size:15px}
-.typebar{display:flex;padding:8px;border-top:1px solid #cfe6f5;background:#fff}
+.typebar{display:flex;flex:none;padding:8px;border-top:1px solid #cfe6f5;background:#fff}
 .chatIn{flex:1;min-width:0;font:inherit;font-size:18px;font-weight:700;color:#12324f;padding:10px 14px;border-radius:14px;border:2px solid #9fd6f5;outline:none;
   -webkit-user-select:text;user-select:text;background:linear-gradient(180deg,#f4fbff,#fff)}
 .chatIn:focus{border-color:#2a9ee8;box-shadow:0 0 0 3px rgba(42,158,232,.25)}
@@ -201,7 +202,11 @@ footer a{color:#fff}
   background:linear-gradient(180deg,#7fd8ff 0%,#2aa7ea 48%,#0b86cf 52%,#39b8f2 100%)}
 .shake{animation:shake .5s}
 @keyframes shake{10%,50%,90%{transform:translate(-10px,4px)}30%,70%{transform:translate(10px,-4px)}100%{transform:none}}
-@media (max-width:700px){.msn{flex-direction:column}.win.list{width:auto;margin:0 0 10px;height:38%}.mk{flex-direction:column}.mk img{margin:0 0 8px}}
+@media (max-width:700px){.msn{flex-direction:column}.win.list{width:auto;min-width:0;margin:0 0 8px;flex:none}
+  .win.list .me,.win.list .wt{display:none}#blist{display:flex;overflow-x:auto;overflow-y:hidden;flex:none}
+  .brow{width:auto;flex:none;flex-direction:column;padding:6px 8px;text-align:center}.brow img{margin:0;width:40px;height:44px}.brow .st{display:none}.brow b{font-size:13px}
+  .msnWrap{top:calc(70px + env(safe-area-inset-top))}.mk{flex-direction:column}.mk img{margin:0 0 8px}}
+@media (max-height:760px){.who{display:none}.msnWrap{bottom:calc(10px + env(safe-area-inset-bottom))!important}.emo{width:44px;height:44px;font-size:22px}}
 </style>
 </head>
 <body>

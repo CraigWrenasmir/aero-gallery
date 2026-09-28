@@ -18,4 +18,7 @@ while any(by.values()):
         if by[c]: mixed.append(by[c].pop(0))
 s=open('src.html').read()
 s=s.replace('/*ITEMS*/[]',json.dumps(mixed,ensure_ascii=False)).replace('/*RIPPLE*/[]',json.dumps(['024','038','070','089']))
+import hashlib
+v=hashlib.md5(open('chars.js','rb').read()).hexdigest()[:8]
+s=s.replace('<script src="chars.js"></script>','<script src="chars.js?v='+v+'"></script>')
 open('index.html','w').write(s); print(len(mixed))

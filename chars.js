@@ -423,8 +423,8 @@ messenger: function(){
   var REPLY = { '😊': ['😊😊', 'hehe :)', 'smiley back at ya!'], '😂': ['LOL', 'hahaha', 'that is so funny'], '😎': ['so cool 😎', 'sunglasses buddies!'], '❤️': ['aww ❤️', 'best buddies!', '❤️❤️❤️'], '👋': ['hi hi!', '👋 hello!', 'hey there!'], '🐠': ['🐠 blub blub', 'fishy!', 'I love fish'], '🤖': ['beep boop 🤖', 'ROBOT MODE ON', '🤖🤖'], '🌈': ['rainbow!!', '🌈 so pretty', 'double rainbow'] };
   var el = panel('<div class="msn"><div class="win list"><div class="wt">Buddy List</div><div class="me"><img id="meImg" alt=""><div><b>Henry</b><span class="st on">● Online</span></div></div><div id="blist"></div></div>' +
     '<div class="win chat"><div class="wt" id="ct">Chat</div><div class="who"><img id="cImg" alt=""><div><b id="cName"></b><span id="cStat"></span></div></div><div id="clog"></div>' +
-    '<div class="emos">' + Object.keys(REPLY).map(function(e){ return '<button class="emo" data-e="' + e + '">' + e + '</button>'; }).join('') + '<button class="emo nudge" data-e="nudge">Nudge!</button></div>' +
-    '<form class="typebar" id="typebar" autocomplete="off"><input id="typeIn" class="chatIn" type="text" maxlength="200" placeholder="Type a message..." enterkeyhint="send"><button class="send" type="submit">Send</button></form></div></div>');
+    '<form class="typebar" id="typebar" autocomplete="off"><input id="typeIn" class="chatIn" type="text" maxlength="200" placeholder="Type a message..." enterkeyhint="send"><button class="send" type="submit">Send</button></form>' +
+    '<div class="emos">' + Object.keys(REPLY).map(function(e){ return '<button class="emo" data-e="' + e + '">' + e + '</button>'; }).join('') + '<button class="emo nudge" data-e="nudge">Nudge!</button></div></div></div>');
   el.className = 'msnWrap';
   document.getElementById('meImg').src = svgURI(msgrSVG({ seed: 1, a: '#7ed957', b: '#1a6fd6', acc: 'headphones', status: 'online', face: true }, false));
   var cur = 0, logs = [], typing = [], greeted = [];
