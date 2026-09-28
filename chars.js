@@ -417,23 +417,89 @@ messenger: function(){
   tv.style.background = 'radial-gradient(900px 600px at 50% 0%,#dff7ff,transparent 60%),linear-gradient(180deg,#5ec2f7,#2a86d8 60%,#3fb54a)';
   var buddies = [];
   for (var i = 0; i < 8; i++) buddies.push(randomMsgr(Math.floor(Math.random() * 1e9)));
-  var used = {}; buddies.forEach(function(b){ var n = b.name, k = 2; while (used[b.name]) b.name = n + ' ' + (k++); used[b.name] = 1; });
+  var names = M_NAMES.slice().sort(function(){ return Math.random() - .5; }); buddies.forEach(function(b, i){ b.name = names[i]; });
   var STAT = { online: 'Online', away: 'Away', busy: 'Busy' };
   var MSGS = ['heyyy! :)', 'whats up?', 'I just found a shiny orb!!', 'wanna play Wii later?', 'lol', 'brb getting a snack', 'did you see the dolphins?', 'my fish is called Bubbles', 'I love blue skies', 'BRB my robot dog needs a walk', 'yay a nudge!', 'hehe', 'this is the best day', '♪ listening to music ♪'];
   var REPLY = { '😊': ['😊😊', 'hehe :)', 'smiley back at ya!'], '😂': ['LOL', 'hahaha', 'that is so funny'], '😎': ['so cool 😎', 'sunglasses buddies!'], '❤️': ['aww ❤️', 'best buddies!', '❤️❤️❤️'], '👋': ['hi hi!', '👋 hello!', 'hey there!'], '🐠': ['🐠 blub blub', 'fishy!', 'I love fish'], '🤖': ['beep boop 🤖', 'ROBOT MODE ON', '🤖🤖'], '🌈': ['rainbow!!', '🌈 so pretty', 'double rainbow'] };
   var el = panel('<div class="msn"><div class="win list"><div class="wt">Buddy List</div><div class="me"><img id="meImg" alt=""><div><b>Henry</b><span class="st on">● Online</span></div></div><div id="blist"></div></div>' +
     '<div class="win chat"><div class="wt" id="ct">Chat</div><div class="who"><img id="cImg" alt=""><div><b id="cName"></b><span id="cStat"></span></div></div><div id="clog"></div>' +
-    '<div class="emos">' + Object.keys(REPLY).map(function(e){ return '<button class="emo" data-e="' + e + '">' + e + '</button>'; }).join('') + '<button class="emo nudge" data-e="nudge">Nudge!</button></div></div></div>');
+    '<div class="emos">' + Object.keys(REPLY).map(function(e){ return '<button class="emo" data-e="' + e + '">' + e + '</button>'; }).join('') + '<button class="emo nudge" data-e="nudge">Nudge!</button></div>' +
+    '<form class="typebar" id="typebar" autocomplete="off"><input id="typeIn" class="chatIn" type="text" maxlength="200" placeholder="Type a message..." enterkeyhint="send"><button class="send" type="submit">Send</button></form></div></div>');
   el.className = 'msnWrap';
   document.getElementById('meImg').src = svgURI(msgrSVG({ seed: 1, a: '#7ed957', b: '#1a6fd6', acc: 'headphones', status: 'online', face: true }, false));
-  var cur = 0;
+  var cur = 0, logs = [], typing = [], greeted = [];
   document.getElementById('blist').innerHTML = buddies.map(function(b, i){
     return '<button class="brow" data-i="' + i + '"><img src="' + svgURI(msgrSVG(b, false)) + '" alt=""><span><b>' + b.name + '</b><i class="st ' + b.status + '">● ' + STAT[b.status] + '</i></span></button>';
   }).join('');
-  function say(who, text, mine){
-    var log = document.getElementById('clog'), d = document.createElement('div');
-    d.className = 'msg' + (mine ? ' mine' : ''); d.innerHTML = '<b>' + who + ' says:</b> ' + text;
-    log.appendChild(d); log.scrollTop = log.scrollHeight;
+  function escT(t){ return String(t).replace(/[&<>"]/g, function(c){ return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function showLog(){
+    var log = document.getElementById('clog');
+    log.innerHTML = (logs[cur] || '') + (typing[cur] ? '<div class="typing">' + buddies[cur].name + ' is typing...</div>' : '');
+    log.scrollTop = log.scrollHeight;
+  }
+  function say(i, who, text, mine){
+    logs[i] = (logs[i] || '') + '<div class="msg' + (mine ? ' mine' : '') + '"><b>' + who + ' says:</b> ' + text + '</div>';
+    if (i === cur) showLog();
+  }
+  // buddy replies after a little "is typing..."
+  var queue = [], running = [];
+  function reply(i, text){
+    (queue[i] = queue[i] || []).push(text);
+    if (!running[i]) pump(i);
+  }
+  function pump(i){
+    var text = queue[i].shift();
+    if (text == null){ running[i] = false; typing[i] = false; if (i === cur) showLog(); return; }
+    running[i] = true; typing[i] = true; if (i === cur) showLog();
+    var wait = 900 + Math.min(2200, text.length * 45) + Math.random() * 500;
+    setTimeout(function(){ typing[i] = false; say(i, buddies[i].name, escT(text)); beeps([880, 1175], 'sine', .1); setTimeout(function(){ pump(i); }, 250); }, wait);
+  }
+  var FAVCOL = ['blue', 'green', 'aqua', 'sky blue', 'lime green', 'purple', 'orange', 'rainbow'];
+  var JOKES = ['why did the fish blush? because it saw the ocean\'s bottom! 😂', 'what do you call a sleeping dinosaur? a dino-snore! 🦕', 'why was the computer cold? it left its Windows open! 🪟', 'what do robots eat for snacks? micro-chips! 🤖', 'why do bees have sticky hair? they use honeycombs! 🐝', 'what did the ocean say to the beach? nothing, it just waved 🌊'];
+  var RULES = [
+    [/\b(joke|jokes|funny)\b/, JOKES],
+    [/(what'?s|what is|whats) (your|ur) name|who (are|r) (you|u)/, ['I\'m {name}!', '{name}! nice to meet you Henry', 'it\'s {name} silly 😜']],
+    [/how (are|r) (you|u)|how'?s it going|hows it going|how you doing/, ['I\'m great! just floating around 😊', 'super good! how are you?', 'awesome, I just popped a giant bubble', 'really good!! 😄']],
+    [/\b(i'?m|im|i am) (good|great|ok|okay|fine|happy|awesome|excited)\b/, ['yay! 😊', 'that\'s great!!', 'woohoo! 🎉']],
+    [/\b(sad|bored|tired|angry|mad|upset|scared|lonely)\b/, ['aww, sending you a big bubble hug 🫧🤗', 'want to play a game to cheer up?', 'I\'m here for you buddy ❤️', 'let\'s go look at some dolphins, that always helps 🐬']],
+    [/\b(love|like) (you|u)\b|best friend|bff/, ['aww ❤️ you\'re my best buddy!', '❤️❤️❤️', 'best buddies forever!! 😊']],
+    [/favou?rite colou?r/, ['{col}! what\'s yours?', 'definitely {col} 😎']],
+    [/favou?rite (food|snack)/, ['bubble tea 🧋', 'pancakes!! 🥞', 'anything blue lol']],
+    [/favou?rite (game|toy)/, ['bowling, I always get strikes 🎳', 'anything with robots in it!', 'Pet Garden!! have you hatched an egg yet? 🥚']],
+    [/favou?rite (animal|pet)/, ['dolphins! 🐬', 'robot dogs 🤖🐶', 'jellyfish, they glow! ✨']],
+    [/\b(lol|lmao|haha+|hehe+|rofl)\b|😂|🤣/, ['hahaha', 'LOL 😂', 'hehe', 'you\'re so funny']],
+    [/\b(bye|cya|see ya|goodnight|good night|gtg|g2g|brb)\b/, ['bye Henry! 👋', 'see ya later! :)', 'ttyl!! 😊', 'nighty night 🌙']],
+    [/^(hi+|hello+|hey+|hiya|yo|sup|g'?day|howdy|heya)\b/, ['hi Henry!! 👋', 'heyyy :)', 'hello hello!', 'hiii! what\'s up?']],
+    [/\b(wii|ds|game|games|gaming|play|minecraft|mario|sonic|roblox|xbox|switch)\b/, ['ooh I love games! 🎮', 'wanna play later?', 'I\'m really good at bowling 🎳', 'that sounds so fun!!']],
+    [/\b(fish|dolphin|dolphins|turtle|ocean|sea|jellyfish|shark|whale|octopus)\b/, ['🐠 I love the ocean!', 'dolphins are the best 🐬', 'blub blub 🫧', 'did you know jellyfish don\'t have brains?!']],
+    [/\b(robot|robots|aibo|beep|boop)\b/, ['beep boop 🤖', 'robots are so cool', 'my robot dog can do a backflip!']],
+    [/\b(dog|dogs|cat|cats|pet|pets|puppy|kitten|bunny)\b/, ['awww I want one! 🐶', 'so cute!!', 'pets are the best']],
+    [/\b(bubble|bubbles|orb|orbs|shiny)\b/, ['bubbles!!! 🫧', 'I popped like 100 today', 'shiny things are the best ✨']],
+    [/\b(school|homework|teacher|class)\b/, ['recess is the best part lol', 'did you learn anything cool?', 'school is ok 😅']],
+    [/\b(hungry|snack|eat|pizza|ice ?cream|lunch|dinner|breakfast|food)\b/, ['now I\'m hungry too 🍕', 'yum!!', 'save me some! 😋']],
+    [/\b(music|song|songs|sing|dance)\b/, ['♪ la la la ♪', 'let\'s have a dance party! 💃', 'I love music 🎵']],
+    [/\b(yes|yeah|yep|yup|ok|okay|sure)\b/, ['cool! 😊', 'yay!', 'awesome!!']],
+    [/\b(no|nope|nah)\b/, ['aww ok 😅', 'haha fair enough', 'oh ok!']],
+    [/\b(thanks|thank you|thx|ty)\b/, ['you\'re welcome! 😊', 'no problem!!', 'anytime buddy']],
+    [/\b(sorry)\b/, ['that\'s ok! 😊', 'no worries!!']],
+    [/\b(henry)\b/, ['that\'s you! 😄', 'Henry is the coolest']],
+  ];
+  var ANY_Q = ['hmm good question 🤔', 'I think... yes!', 'maybe! what do you think?', 'I dunno, you tell me! :)', 'ooh let me think about that 🤔'];
+  var ANY = ['cool!!', 'haha nice', 'ooh tell me more!', 'no way!', 'awesome :D', 'totally!', 'wow really?', 'that\'s so cool', 'hehe yeah', 'omg same!!'];
+  function smart(text, b){
+    var t = text.toLowerCase().trim(), out = null;
+    for (var k = 0; k < RULES.length && !out; k++) if (RULES[k][0].test(t)) out = pickR(Math.random, RULES[k][1]);
+    if (!out && !/[a-z0-9]/.test(t)) out = pickR(Math.random, ['😊', '😄😄', '✨✨', '🫧', '👍']);
+    if (!out) out = pickR(Math.random, /\?\s*$/.test(t) ? ANY_Q : ANY);
+    return out.replace('{name}', b.name).replace('{col}', FAVCOL[b.seed % FAVCOL.length]);
+  }
+  function send(i, text){
+    var b = buddies[i];
+    if (b.status !== 'online' && !greeted[i]){ greeted[i] = true; reply(i, b.status === 'busy' ? 'oops I was busy, I\'m here now!' : 'sorry I was away! 🙈 I\'m back'); b.status = 'online';
+      var row = document.querySelector('.brow[data-i="' + i + '"] .st'); if (row){ row.className = 'st online'; row.textContent = '● Online'; }
+      var rim = document.querySelector('.brow[data-i="' + i + '"] img'); if (rim) rim.src = svgURI(msgrSVG(b, false));
+      document.getElementById('cStat').textContent = 'Online'; document.getElementById('cStat').className = 'st online'; }
+    reply(i, smart(text, b));
   }
   function open(i){
     cur = i; var b = buddies[i];
@@ -441,24 +507,31 @@ messenger: function(){
     document.getElementById('cName').textContent = b.name; document.getElementById('cStat').textContent = STAT[b.status];
     document.getElementById('cStat').className = 'st ' + b.status;
     document.getElementById('ct').textContent = b.name + ' - Conversation';
-    document.getElementById('clog').innerHTML = '';
     [].forEach.call(document.querySelectorAll('.brow'), function(r){ r.classList.toggle('sel', +r.getAttribute('data-i') === i); });
-    setTimeout(function(){ say(b.name, MSGS[Math.floor(Math.random() * MSGS.length)]); beeps([880, 1175], 'sine', .1); }, 500);
+    showLog();
+    if (!logs[i]){ logs[i] = ' '; setTimeout(function(){ say(i, b.name, MSGS[Math.floor(Math.random() * MSGS.length)]); beeps([880, 1175], 'sine', .1); }, 500); }
   }
+  document.getElementById('typebar').onsubmit = function(e){
+    e.preventDefault();
+    var inp = document.getElementById('typeIn'), text = inp.value.trim(); if (!text) return;
+    inp.value = ''; ac();
+    say(cur, 'Henry', escT(text), true); beeps([1047], 'sine', .07);
+    send(cur, text);
+  };
   el.onclick = function(e){
     var t = e.target.closest ? e.target.closest('button') : null; if (!t) return;
     if (t.classList.contains('brow')){ open(+t.getAttribute('data-i')); return; }
     var em = t.getAttribute('data-e'); if (!em) return;
-    var b = buddies[cur];
+    var i = cur, b = buddies[i];
     if (em === 'nudge'){
-      say('Henry', '<i>sent a nudge!</i>', true);
+      say(i, 'Henry', '<i>sent a nudge!</i>', true);
       var w = el.querySelector('.chat'); w.classList.remove('shake'); void w.offsetWidth; w.classList.add('shake');
       beeps([392, 392, 523, 392], 'square', .08);
-      setTimeout(function(){ say(b.name, pickR(Math.random, ['whoa!! 😲', 'hey!! nudge back!', 'haha you nudged me', 'I felt that! 😂'])); beeps([880, 1175], 'sine', .1); }, 900);
+      reply(i, pickR(Math.random, ['whoa!! 😲', 'hey!! nudge back!', 'haha you nudged me', 'I felt that! 😂']));
       return;
     }
-    say('Henry', em, true); beeps([1047], 'sine', .07);
-    setTimeout(function(){ say(b.name, pickR(Math.random, REPLY[em])); beeps([880, 1175], 'sine', .1); }, 700 + Math.random() * 600);
+    say(i, 'Henry', em, true); beeps([1047], 'sine', .07);
+    reply(i, pickR(Math.random, REPLY[em]));
   };
   open(0);
   return { stop: function(){ panel(''); el.className = ''; tv.style.background = ''; cv.style.display = ''; } };
